@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "computercraft-polymer-patch",
+	"version": "${version}",
+	"name": "Polymer Patch for CC: Tweaked",
+	"description": "Polymer Patch for CC: Tweaked",
+	"authors": [
+		"Patbox"
+	],
+	"contact": {
+		"homepage": "https://pb4.eu",
+		"sources": "https://github.com/PolymerPorts/computercraft-patch"
+	},
+	"license": "LGPLv3",
+	"icon": "assets/computercraft-polymer-patch/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "eu.pb4.computercraftpatch.impl.ComputerCraftPolymerPatch"
+		]
+	},
+	"mixins": [
+		"computercraft-polymer-patch.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.0",
+		"computercraft": ">=1.109.6",
+		"minecraft": "~1.20.4",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
