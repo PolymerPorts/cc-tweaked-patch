@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "computercraft-polymer-patch",
+	"id": "cc-tweaked-polymer-patch",
 	"version": "${version}",
 	"name": "Polymer Patch for CC: Tweaked",
 	"description": "Polymer Patch for CC: Tweaked",
@@ -12,15 +12,15 @@
 		"sources": "https://github.com/PolymerPorts/computercraft-patch"
 	},
 	"license": "LGPLv3",
-	"icon": "assets/computercraft-polymer-patch/icon.png",
+	"icon": "assets/cct-patch/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-          "eu.pb4.computercraftpatch.impl.ComputerCraftPolymerPatch"
+          "eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch"
 		]
 	},
 	"mixins": [
-		"computercraft-polymer-patch.mixins.json"
+      "cc-tweaked-polymer-patch.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.15.0",

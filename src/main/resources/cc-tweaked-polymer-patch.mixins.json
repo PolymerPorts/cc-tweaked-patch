@@ -1,0 +1,30 @@
+{
+  "required": true,
+  "package": "eu.pb4.cctpatch.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "mod.PlatformHelperImplRegistryEntryImplMixin",
+    "mod.block.GenericBlockModelMixin",
+    "mod.block.ModRegistryBlocksMixin",
+    "mod.block.MonitorBlockEntityMixin",
+    "mod.block.OnUseFixBlockMixin",
+    "mod.command.CommandComputerCraftMixin",
+    "mod.command.ModRegistryArgumentTypesMixin",
+    "mod.ext.ServerComputerMixin",
+    "mod.ext.ServerInputStateMixin",
+    "mod.ext.ServerMonitorMixin",
+    "mod.ext.TerminalMixin",
+    "mod.item.GenericItemMixin",
+    "mod.item.ModRegistryCreativeTabsMixin",
+    "mod.item.ModRegistryItemsMixin",
+    "mod.item.PocketComputerItemMixin",
+    "mod.item.RecipeMixin",
+    "mod.item.SimpleColoredItemMixin",
+    "poly.PlayerEntityMixin",
+    "poly.ServerPlayerEntityMixin",
+    "poly.ServerPlayNetworkHandlerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
