@@ -11,7 +11,7 @@ import net.minecraft.item.Item;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
-@Mixin({ComputerItem.class, TurtleItem.class, PrintoutItem.class,
+@Mixin({ComputerItem.class, PrintoutItem.class,
         CableBlockItem.class, TreasureDiskItem.class
 })
 public class GenericItemMixin implements AutoModeledPolymerItem {

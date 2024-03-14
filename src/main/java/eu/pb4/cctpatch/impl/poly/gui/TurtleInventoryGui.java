@@ -7,6 +7,7 @@ import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.ServerTask;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
@@ -16,7 +17,7 @@ public class TurtleInventoryGui extends SimpleGui {
     private final TurtleMenu wrapped;
 
     public TurtleInventoryGui(ServerPlayerEntity player, TurtleMenu menu) {
-        super(ScreenHandlerType.GENERIC_9X2, player, false);
+        super(ScreenHandlerType.GENERIC_9X4, player, false);
 
         this.wrapped = menu;
         var turtle = (TurtleBlockEntity) menu.getComputer().getLevel().getBlockEntity(menu.getComputer().getPosition());
@@ -24,15 +25,13 @@ public class TurtleInventoryGui extends SimpleGui {
                 .withFormatting(Formatting.WHITE))).append(turtle.getDisplayName())
         );
 
-        this.setSlotRedirect(9, menu.slots.get(menu.slots.size() - 2));
-        this.setSlotRedirect(17, menu.slots.get(menu.slots.size() - 1));
+        this.setSlotRedirect(7 + 9, menu.slots.get(menu.slots.size() - 2));
+        this.setSlotRedirect(7 + 9 * 2, menu.slots.get(menu.slots.size() - 1));
 
-        for (int i = 0 ; i < 9; i++) {
-            this.setSlotRedirect(i, menu.slots.get(i));
-        }
-
-        for (int i = 9; i < turtle.size(); i++) {
-            this.setSlotRedirect(i + 1, new Slot(turtle.getAccess().getInventory(), i, 0, 0));
+        for (int x = 0; x < 4; x++) {
+            for (int y = 0; y < 4; y++) {
+                this.setSlotRedirect(x + 1 + y * 9, menu.slots.get(x + y * 4));
+            }
         }
 
         this.open();
@@ -47,6 +46,6 @@ public class TurtleInventoryGui extends SimpleGui {
 
     @Override
     public void onClose() {
-        ComputerGui.open(this.player, this.wrapped);
+        this.player.getServer().send(new ServerTask(this.player.getServer().getTicks(), () -> ComputerGui.open(this.player, this.wrapped)));
     }
 }

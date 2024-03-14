@@ -17,6 +17,9 @@
 	"entrypoints": {
 		"main": [
           "eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch"
+		],
+		"polymc": [
+			"eu.pb4.cctpatch.impl.compat.PolyMcEntrypoint"
 		]
 	},
 	"mixins": [

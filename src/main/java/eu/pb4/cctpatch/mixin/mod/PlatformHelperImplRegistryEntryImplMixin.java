@@ -1,7 +1,9 @@
 package eu.pb4.cctpatch.mixin.mod;
 
+import eu.pb4.cctpatch.impl.compat.PolyMcUtils;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.other.PolymerScreenHandlerUtils;
+import io.github.theepicblock.polymc.PolyMc;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -24,6 +26,7 @@ public class PlatformHelperImplRegistryEntryImplMixin {
             PolymerBlockUtils.registerBlockEntity((BlockEntityType<?>) this.instance);
         } else if (registry == Registries.SCREEN_HANDLER) {
             PolymerScreenHandlerUtils.registerType((ScreenHandlerType<?>) this.instance);
+            PolyMcUtils.addScreenHandlerBypass((ScreenHandlerType<?>) this.instance);
         }
     }
 

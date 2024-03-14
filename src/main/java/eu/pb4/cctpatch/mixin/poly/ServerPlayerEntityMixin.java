@@ -5,8 +5,10 @@ import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.common.HeldItemMenu;
 import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu;
 import dan200.computercraft.shared.media.items.PrintoutItem;
+import dan200.computercraft.shared.peripheral.diskdrive.DiskDriveMenu;
 import dan200.computercraft.shared.peripheral.printer.PrinterMenu;
 import eu.pb4.cctpatch.impl.poly.gui.ComputerGui;
+import eu.pb4.cctpatch.impl.poly.gui.DiskDriveInventoryGui;
 import eu.pb4.cctpatch.impl.poly.gui.PrintedPageGui;
 import eu.pb4.cctpatch.impl.poly.gui.PrinterInventoryGui;
 import net.minecraft.screen.NamedScreenHandlerFactory;
@@ -19,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.OptionalInt;
 
-@Mixin(ServerPlayerEntity.class)
+@Mixin(value = ServerPlayerEntity.class)
 public class ServerPlayerEntityMixin {
     @Inject(method = "openHandledScreen", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayNetworkHandler;sendPacket(Lnet/minecraft/network/packet/Packet;)V", shift = At.Shift.BEFORE), cancellable = true)
     private void openCustomScreen(NamedScreenHandlerFactory factory, CallbackInfoReturnable<OptionalInt> cir, @Local ScreenHandler handler) {
@@ -31,6 +33,9 @@ public class ServerPlayerEntityMixin {
             cir.setReturnValue(OptionalInt.empty());
         } else if (handler instanceof HeldItemMenu menu && menu.getStack().getItem() instanceof PrintoutItem) {
             new PrintedPageGui((ServerPlayerEntity) (Object) this, menu.getStack());
+            cir.setReturnValue(OptionalInt.empty());
+        } else if (handler instanceof DiskDriveMenu menu) {
+            new DiskDriveInventoryGui((ServerPlayerEntity) (Object) this, menu);
             cir.setReturnValue(OptionalInt.empty());
         }
     }

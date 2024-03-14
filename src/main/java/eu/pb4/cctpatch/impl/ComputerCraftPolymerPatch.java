@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import eu.pb4.cctpatch.impl.poly.Fonts;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
+import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
@@ -30,6 +31,8 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 		Fonts.TERMINAL_FONT.hashCode();
 		GuiTextures.ADVANCED_COMPUTER.hashCode();
 
+		TurtleModel.CRAFTING_MODEL.left();
+
 		PolymerResourcePackUtils.addModAssets("computercraft");
 		PolymerResourcePackUtils.addModAssets(MOD_ID);
 
@@ -39,7 +42,20 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 		PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(builder -> {
 			builder.addWriteConverter((path, data) -> {
 				try {
-					if (path.startsWith("assets/computercraft/models/") && path.endsWith(".json")) {
+					if (path.startsWith("assets/computercraft/models/block/turtle_colour.json")) {
+						var json = JsonParser.parseString(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
+						var elements = json.getAsJsonArray("elements");
+						for (var el : elements) {
+							var faces = el.getAsJsonObject().getAsJsonObject("faces");
+							for (var key : faces.keySet()) {
+								var val = faces.get(key).getAsJsonObject();
+								if (val.get("tintindex") != null) {
+									val.addProperty("tintindex", 1);
+								}
+							}
+						}
+						return json.toString().getBytes(StandardCharsets.UTF_8);
+					} else if (path.startsWith("assets/computercraft/models/") && path.endsWith(".json")) {
 						var json = JsonParser.parseString(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
 						if (json.get("loader") != null && json.get("model") != null) {
 							var obj = new JsonObject();
@@ -61,7 +77,6 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 							ImageIO.write(image, "png", out);
 							return out.toByteArray();
 						}
-
 					}
 				} catch (Throwable ignored) {}
 

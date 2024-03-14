@@ -24,6 +24,15 @@
             "chars": [
                 "1"
             ]
+        },
+        {
+            "type": "bitmap",
+            "file": "cct-patch:gui/center_slot.png",
+            "ascent": 13,
+            "height": 256,
+            "chars": [
+                "2"
+            ]
         }
     ]
 }

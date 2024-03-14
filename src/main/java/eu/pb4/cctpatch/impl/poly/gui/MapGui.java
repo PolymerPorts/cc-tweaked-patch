@@ -71,6 +71,7 @@ public class MapGui extends HotbarGui {
     public int cursorX;
     public int cursorY;
     public int mouseMoves;
+    private boolean blockWeather;
 
     public MapGui(ServerPlayerEntity player) {
         super(player);
@@ -119,15 +120,19 @@ public class MapGui extends HotbarGui {
         player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED, GameMode.SPECTATOR.getId()));
         player.networkHandler.sendPacket(new EntityS2CPacket.Rotate(player.getId(), (byte) 0, (byte) 0, player.isOnGround()));
         player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(player.getId(), List.of(DataTracker.SerializedEntry.of(EntityTrackedData.POSE, EntityPose.STANDING))));
-
         player.networkHandler.sendPacket(COMMAND_PACKET);
+
+        this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_STOPPED, 0.0F));
+        this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED, 0));
+        this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED, 0));
+        this.blockWeather = true;
 
         for (int i = 0; i < 9; i++) {
             this.setSlot(i, new ItemStack(Items.STICK));
         }
 
-        player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("polyport.cc.press_to_close", "Ctrl", "Q (Drop)")
-            .formatted(Formatting.DARK_RED), true));
+        //player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("polyport.cc.press_to_close", "Ctrl", "Q (Drop)")
+        //    .formatted(Formatting.DARK_RED), true));
     }
 
     public void render() {
@@ -157,6 +162,7 @@ public class MapGui extends HotbarGui {
         if (this.cursor != null) {
             this.cursor.remove();
         }
+        this.blockWeather = false;
         this.virtualDisplay.removePlayer(this.player);
         this.virtualDisplay.destroy();
         //this.virtualDisplay2.destroy();
@@ -164,7 +170,14 @@ public class MapGui extends HotbarGui {
         this.canvas.destroy();
         this.player.server.getCommandManager().sendCommandTree(this.player);
         this.holder.stopWatching(this.player);
-        this.player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(this.player));
+        var world = this.player.getServerWorld();
+        if (!world.isRaining()) {
+            this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_STOPPED, 0.0F));
+        } else {
+            this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_STARTED, 0.0F));
+        }
+        this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED, world.getRainGradient(1)));
+        this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED, world.getThunderGradient(1)));        this.player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(this.player));
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED,
                 this.player.interactionManager.getGameMode().getId()));
         this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch(), EnumSet.noneOf(PositionFlag.class), 0));
@@ -259,4 +272,27 @@ public class MapGui extends HotbarGui {
     }
 
 
+    public boolean preventPacket(Packet<?> packet) {
+        if (packet instanceof GameStateChangeS2CPacket state) {
+            return state.getReason() == GameStateChangeS2CPacket.GAME_MODE_CHANGED
+                    || state.getReason() == GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED
+                    || state.getReason() == GameStateChangeS2CPacket.RAIN_STARTED
+                    || state.getReason() == GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED;
+        } else if (packet instanceof PlaySoundS2CPacket sound){
+            var camera = this.holder.getPos().add(this.cameraPoint.getOffset());
+            if (camera.squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
+                return false;
+            } else if (this.player.getEyePos().squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
+                var pos = camera.add(this.player.getEyePos().subtract(sound.getX(), sound.getY(), sound.getZ())
+                        .rotateY(this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE)
+                        .rotateX(this.player.getPitch() * MathHelper.RADIANS_PER_DEGREE)
+                );
+                this.player.networkHandler.sendPacket(new PlaySoundS2CPacket(sound.getSound(), sound.getCategory(), pos.x, pos.y, pos.z, sound.getVolume(), sound.getPitch(), sound.getSeed()));
+            }
+
+            return true;
+        }
+
+        return false;
+    }
 }

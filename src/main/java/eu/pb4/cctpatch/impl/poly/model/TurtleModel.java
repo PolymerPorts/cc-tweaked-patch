@@ -1,159 +1,198 @@
 package eu.pb4.cctpatch.impl.poly.model;
 
+import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.api.turtle.ITurtleUpgrade;
+import dan200.computercraft.api.turtle.TurtleAnimation;
+import dan200.computercraft.api.turtle.TurtleSide;
+import dan200.computercraft.shared.ComputerCraft;
+import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
+import dan200.computercraft.shared.turtle.blocks.TurtleBlockEntity;
+import dan200.computercraft.shared.turtle.core.TurtleBrain;
+import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
+import dan200.computercraft.shared.turtle.upgrades.TurtleModem;
+import dan200.computercraft.shared.turtle.upgrades.TurtleSpeaker;
+import dan200.computercraft.shared.turtle.upgrades.TurtleTool;
+import eu.pb4.cctpatch.mixin.TurtleModemAccessor;
+import eu.pb4.cctpatch.mixin.TurtleToolAccessor;
+import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
+import eu.pb4.factorytools.api.virtualentity.BlockModel;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
+import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
+import eu.pb4.polymer.virtualentity.api.attachment.BlockBoundAttachment;
+import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
+import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
+import net.minecraft.registry.tag.ItemTags;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.Pair;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.RotationAxis;
+import net.minecraft.util.math.Vec3d;
+import org.joml.Vector3f;
 
-public class TurtleModel extends ElementHolder {
-    /*
-    private final ComputerProxy proxy;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Consumer;
 
-    private final Matrix4fStack matrix4f = new Matrix4fStack(3);
+public class TurtleModel extends BlockModel {
+    public static final ModemModel NORMAL_MODEM_MODEL = ModemModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_modem_normal"));
+    public static final ModemModel ADVANCED_MODEM_MODEL = ModemModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_modem_advanced"));
+    public static final SidedModel SPEAKER_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_speaker"));
+    public static final SidedModel CRAFTING_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_crafting_table"));
+    public static final ItemStack COLORED_TURTLE_MODEL = BaseItemProvider.requestModel(Items.FIREWORK_STAR, new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
 
-    private final MobAnchorElement ride = new MobAnchorElement();
-    private final ItemDisplayElement main = new ItemDisplayElement();
-    private final ItemDisplayElement color = new ItemDisplayElement();
-    private final ItemDisplayElement leftUpgrade = new ItemDisplayElement();
-    private final ItemDisplayElement rightUpgrade = new ItemDisplayElement();
-    private final IntList visibleEntities = new IntArrayList();
-    private final boolean isRightBlock;
-    private final boolean isLeftBlock;
-    private float targetRotation;
-    private int tickId;
+    private final ItemDisplayElement base;
+    private final ItemDisplayElement leftAttachment;
+    private final ItemDisplayElement rightAttachment;
 
-    public TurtleModel(ComputerProxy proxy, Direction direction) {
-        this.proxy = proxy;
-        this.addElement(this.ride);
-        this.setDirection(direction);
+    private float baseYaw;
+    private ITurtleUpgrade leftUpgrade;
+    private ITurtleUpgrade rightUpgrade;
+    private Vec3d lastPos;
+    private int color = -1;
 
-        this.main.setItem(PolymerUtils.createPlayerHead(this.proxy.getBlockEntity().getFamily() == ComputerFamily.ADVANCED ? HeadTextures.ADVANCED_TURTLE : HeadTextures.TURTLE));
-        this.main.setModelTransformation(ItemDisplayContext.FIXED);
-        this.main.setDisplayWidth(2);
-        this.main.setDisplayHeight(2);
-        //this.main.setInterpolationDuration(2);
-        this.visibleEntities.add(this.main.getEntityId());
-        this.addElement(this.main);
-
-        this.color.setModelTransformation(ItemDisplayContext.FIXED);
-        this.color.setDisplayWidth(2);
-        this.color.setDisplayHeight(2);
-        //this.color.setInterpolationDuration(2);
-        this.visibleEntities.add(this.color.getEntityId());
-
-        this.addElement(this.color);
-
-        this.setColor(((TileTurtle) proxy.getBlockEntity()).brain.getDyeColour());
-
-
-        var rightUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.RIGHT);
-        if (rightUpgrade != null) {
-            this.isRightBlock = rightUpgrade.getCraftingItem().getItem() instanceof BlockItem;
-            this.rightUpgrade.setItem(rightUpgrade.getCraftingItem());
-            this.rightUpgrade.setModelTransformation(ItemDisplayContext.FIXED);
-            this.rightUpgrade.setDisplayWidth(2);
-            this.rightUpgrade.setDisplayHeight(2);
-            //this.rightUpgrade.setInterpolationDuration(2);
-            this.visibleEntities.add(this.rightUpgrade.getEntityId());
-
-            this.addElement(this.rightUpgrade);
-        } else {
-            this.isRightBlock = false;
-        }
-
-        var leftUpgrade = ((TileTurtle) proxy.getBlockEntity()).getUpgrade(TurtleSide.LEFT);
-        if (leftUpgrade != null) {
-            this.isLeftBlock = leftUpgrade.getCraftingItem().getItem() instanceof BlockItem;
-
-            this.leftUpgrade.setItem(leftUpgrade.getCraftingItem());
-            this.leftUpgrade.setModelTransformation(ItemDisplayContext.FIXED);
-            this.leftUpgrade.setDisplayWidth(2);
-            this.leftUpgrade.setDisplayHeight(2);
-            //this.leftUpgrade.setInterpolationDuration(2);
-            this.visibleEntities.add(this.leftUpgrade.getEntityId());
-            this.addElement(this.leftUpgrade);
-        } else {
-            this.isLeftBlock = false;
-        }
-
-        this.setupTransforms();
-
+    public TurtleModel(BlockState state, BlockPos pos) {
+        this.lastPos = Vec3d.ofCenter(pos);
+        this.baseYaw = state.get(TurtleBlock.FACING).asRotation();
+        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem()));
+        this.base.setTeleportDuration(1);
+        this.base.setModelTransformation(ModelTransformationMode.NONE);
+        this.base.setYaw(this.baseYaw);
+        this.leftAttachment = ItemDisplayElementUtil.createSimple();
+        this.leftAttachment.setInterpolationDuration(1);
+        this.leftAttachment.setModelTransformation(ModelTransformationMode.NONE);
+        this.leftAttachment.setYaw(this.baseYaw);
+        this.rightAttachment = ItemDisplayElementUtil.createSimple();
+        this.rightAttachment.setInterpolationDuration(1);
+        this.rightAttachment.setModelTransformation(ModelTransformationMode.NONE);
+        this.rightAttachment.setYaw(this.baseYaw);
+        this.addElement(this.base);
+        this.addElement(this.leftAttachment);
+        this.addElement(this.rightAttachment);
     }
 
-    private void setupTransforms() {
-        matrix4f.clear();
-        matrix4f.rotateY(this.targetRotation);
-        matrix4f.pushMatrix();
-        this.main.setTransformation(matrix4f.translate(0, -0.1f, 0).scale(1.5f));
-        matrix4f.popMatrix();
+    @Override
+    protected void startWatchingExtraPackets(ServerPlayNetworkHandler player, Consumer<Packet<ClientPlayPacketListener>> packetConsumer) {
+        super.startWatchingExtraPackets(player, packetConsumer);
+        packetConsumer.accept(VirtualEntityUtils.createRidePacket(this.base.getEntityId(), IntList.of(this.leftAttachment.getEntityId(), this.rightAttachment.getEntityId())));
+    }
 
-        matrix4f.pushMatrix();
-        matrix4f.translate(0, 0f, 0).scale(1.2f);
-        this.color.setTransformation(matrix4f);
-        matrix4f.popMatrix();
+    @Override
+    protected void notifyElementsOfPositionUpdate(Vec3d newPos, Vec3d delta) {
+    }
 
-        if (this.leftUpgrade.getHolder() != null) {
+    public void setYaw(float yaw) {
+        if (this.baseYaw == yaw) {
+            return;
+        }
 
-            matrix4f.pushMatrix();
+        this.baseYaw = yaw;
+        this.base.setYaw(this.baseYaw);
+        this.leftAttachment.setYaw(this.baseYaw);
+        this.rightAttachment.setYaw(this.baseYaw);
+    }
+    public void setUpgrades(TurtleBrain brain, ITurtleUpgrade left, ITurtleUpgrade right) {
+        if (this.leftUpgrade != left) {
+            this.leftUpgrade = left;
+            this.leftAttachment.setItem(getUpgradeModel(left, brain, TurtleSide.LEFT));
+        }
+        if (this.rightUpgrade != right) {
+            this.rightUpgrade = right;
+            this.rightAttachment.setItem(getUpgradeModel(right, brain, TurtleSide.RIGHT));
+        }
+    }
 
-            if (this.isLeftBlock) {
-                matrix4f.translate(-0.2f, -0.1f, 0);
+    private ItemStack getUpgradeModel(ITurtleUpgrade upgrade, TurtleBrain brain, TurtleSide turtleSide) {
+        if (upgrade instanceof TurtleModemAccessor modem) {
+            var type = modem.isAdvanced() ? ADVANCED_MODEM_MODEL : NORMAL_MODEM_MODEL;
+            return (brain.getUpgradeNBTData(turtleSide).getBoolean("active") ? type.onModel : type.offModel).get(turtleSide);
+        } else if (upgrade instanceof TurtleSpeaker) {
+            return SPEAKER_MODEL.get(turtleSide);
+        } else if (upgrade instanceof TurtleCraftingTable) {
+            return CRAFTING_MODEL.get(turtleSide);
+        } else if (upgrade instanceof TurtleToolAccessor tool) {
+            return tool.getItem();
+        }
+
+        return ItemStack.EMPTY;
+    }
+
+    public void update(TurtleBrain turtleBrain) {
+        var pos = turtleBrain.getVisualPosition(1);
+        this.setYaw(turtleBrain.getVisualYaw(1));
+
+        if (!pos.equals(this.lastPos)) {
+            this.base.notifyMove(this.lastPos, pos, pos.subtract(this.lastPos));
+            this.lastPos = pos;
+        }
+
+        if (this.color != turtleBrain.getColour()) {
+            this.color = turtleBrain.getColour();
+            if (this.color == -1) {
+                this.base.setItem(ItemDisplayElementUtil.getModel(this.blockState().getBlock().asItem()));
             } else {
-                matrix4f.translate(-0.45f, 0, 0);
+                var model = COLORED_TURTLE_MODEL.copy();
+                var ex = new NbtCompound();
+                var c = new NbtIntArray(new int[] { this.color });
+                ex.put("Colors", c);
+                model.getOrCreateNbt().put("Explosion", ex);
+                this.base.setItem(model);
+            }
+        }
+
+        this.setUpgrades(turtleBrain, turtleBrain.getUpgrade(TurtleSide.LEFT), turtleBrain.getUpgrade(TurtleSide.RIGHT));
+
+        var mat = BlockModel.mat();
+        for (var side : TurtleSide.values()) {
+            var upgrade = side == TurtleSide.RIGHT ? rightUpgrade : leftUpgrade;
+            if (upgrade == null) continue;
+            var toolAngle = turtleBrain.getToolRenderAngle(side, 1);
+            mat.rotate(RotationAxis.NEGATIVE_X.rotationDegrees(toolAngle));
+            if (upgrade instanceof TurtleTool) {
+                mat.rotateY(MathHelper.HALF_PI);
+                mat.translate(0, 0, side == TurtleSide.RIGHT ? -6.5f / 16f : 6.5f / 16f);
             }
 
-            matrix4f.rotateX(((TileTurtle) proxy.getBlockEntity()).getToolRenderAngle( TurtleSide.LEFT, 0 ) * -Mth.DEG_TO_RAD);
-
-            matrix4f.rotateY(-Mth.HALF_PI);
-            this.leftUpgrade.setTransformation(matrix4f);
-            matrix4f.popMatrix();
-        }
-
-        if (this.rightUpgrade.getHolder() != null) {
-
-            matrix4f.pushMatrix();
-
-            if (this.isRightBlock) {
-                matrix4f.translate(0.2f, -0.1f, 0);
-            } else {
-                matrix4f.translate(0.45f, 0, 0);
+            var att = (side == TurtleSide.RIGHT ? this.rightAttachment : this.leftAttachment);
+            att.setTransformation(mat);
+            mat.identity();
+            if (att.isTransformationDirty()) {
+                att.startInterpolation();
             }
-
-            matrix4f.rotateX(((TileTurtle) proxy.getBlockEntity()).getToolRenderAngle( TurtleSide.RIGHT, 0 ) * -Mth.DEG_TO_RAD);
-
-            matrix4f.rotateY(-Mth.HALF_PI);
-            this.rightUpgrade.setTransformation(matrix4f);
-            matrix4f.popMatrix();
         }
     }
 
-    @Override
-    protected void startWatchingExtraPackets(ServerGamePacketListenerImpl player, Consumer<Packet<ClientGamePacketListener>> packetConsumer) {
-        packetConsumer.accept(VirtualEntityUtils.createRidePacket(this.ride.getEntityId(), this.visibleEntities));
-    }
-
-    @Override
-    protected void notifyElementsOfPositionUpdate(Vec3 newPos, Vec3 delta) {
-        this.ride.notifyMove(this.currentPos, newPos, delta);
-        //super.notifyElementsOfPositionUpdate(newPos, delta);
-    }
-
-    @Override
-    protected void onTick() {
-        //this.main.startInterpolation();
-        //this.color.startInterpolation();
-        //this.rightUpgrade.startInterpolation();
-        //this.leftUpgrade.startInterpolation();
-        this.setupTransforms();
-        this.tickId++;
-    }
-
-    public void setColor(DyeColor color) {
-        if (color == null) {
-            this.color.setItem(ItemStack.EMPTY);
-        } else {
-            this.color.setItem(BuiltInRegistries.ITEM.get(new ResourceLocation(color.getName() + "_wool")).getDefaultInstance());
+    public record ModemModel(SidedModel onModel, SidedModel offModel) {
+        public static ModemModel of(Identifier identifier) {
+            return new ModemModel(
+                    SidedModel.of(identifier.withSuffixedPath("_on")),
+                    SidedModel.of(identifier.withSuffixedPath("_off"))
+            );
         }
     }
 
-    public void setDirection(Direction direction) {
-        this.targetRotation = (360 + 180 - direction.toYRot()) % 360 * Mth.DEG_TO_RAD;
-    }*/
+    public record SidedModel(ItemStack left, ItemStack right) {
+        public static SidedModel of(Identifier identifier) {
+            return new SidedModel(
+                    BaseItemProvider.requestModel(identifier.withSuffixedPath("_left")),
+                    BaseItemProvider.requestModel(identifier.withSuffixedPath("_right"))
+            );
+        }
+
+        public ItemStack get(TurtleSide side) {
+            return side == TurtleSide.RIGHT ? right : left;
+        }
+    }
 }

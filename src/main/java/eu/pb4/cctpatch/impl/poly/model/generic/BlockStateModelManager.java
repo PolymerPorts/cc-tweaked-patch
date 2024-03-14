@@ -2,6 +2,7 @@ package eu.pb4.cctpatch.impl.poly.model.generic;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
+import eu.pb4.cctpatch.impl.poly.AutoModeledPolymerBlock;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.ModelVariant;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.MultiPartDefinition;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.StateDefinition;
@@ -34,6 +35,9 @@ public class BlockStateModelManager {
     private static final Map<Identifier, ItemStack> EXISTING_MODELS = new HashMap<>();
 
     public static void addBlock(Identifier identifier, Block block) {
+        if (!(block instanceof AutoModeledPolymerBlock)) {
+
+        }
         try {
             var path = FabricLoader.getInstance().getModContainer("computercraft").get()
                     .findPath("assets/" + identifier.getNamespace() + "/blockstates/" + identifier.getPath() + ".json").get();
