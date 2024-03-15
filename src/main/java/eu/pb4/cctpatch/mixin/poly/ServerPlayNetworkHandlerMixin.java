@@ -66,6 +66,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                 computerGui.onCommandInput(packet.command());
             });
             ci.cancel();
+
+            this.validateMessage(packet.acknowledgment());
         }
     }
 
