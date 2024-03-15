@@ -73,7 +73,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private void ccp_onMove(PlayerMoveC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             if (packet.getPitch(0) != 0 || packet.getYaw(0) != 0) {
-                this.sendPacket(new PlayerPositionLookS2CPacket(player.getX(), player.getY(), player.getZ(), 0, 0, EnumSet.noneOf(PositionFlag.class), 0));
+                this.sendPacket(new PlayerPositionLookS2CPacket(player.getX(), computerGui.pos.getY(), player.getZ(), 0, 0, EnumSet.noneOf(PositionFlag.class), 0));
             }
             this.server.execute(() -> {
                 var xRot = packet.getPitch(computerGui.xRot);

@@ -2,7 +2,6 @@ package eu.pb4.cctpatch.impl.poly.gui;
 
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.peripheral.diskdrive.DiskDriveMenu;
-import dan200.computercraft.shared.peripheral.printer.PrinterMenu;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
 import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.screen.ScreenHandlerType;
