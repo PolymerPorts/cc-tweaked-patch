@@ -6,6 +6,10 @@ import dan200.computercraft.shared.computer.terminal.NetworkedTerminal;
 
 public interface ServerComputerExt {
     NetworkedTerminal getTerminalPublic();
+
+    default int getMapId() {
+        return 0;
+    };
     static ServerComputerExt of(ServerComputer state) {
         return (ServerComputerExt) state;
     }

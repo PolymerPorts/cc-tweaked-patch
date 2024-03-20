@@ -126,14 +126,14 @@ public final class ComputerGui extends MapGui {
         this.computer = wrapped.getComputer();
 
         {
-            var terminal = TerminalExt.of(this.wrapped.getComputer());
+            var terminal = TerminalExt.of(this.wrapped.getComputer()).getRenderer();
             int centerX = canvas.getWidth() / 2;
             int centerY = canvas.getHeight() / 2 - 48;
 
             boolean turtle = this.wrapped instanceof TurtleMenu;
 
-            int termX = centerX - terminal.getRenderedWidth() / 2;
-            int termY = centerY - terminal.getRenderedHeight() / 2;
+            int termX = centerX - terminal.renderedWidth() / 2;
+            int termY = centerY - terminal.renderedHeight() / 2;
 
             if (turtle) {
                 termX -= 36;
@@ -156,7 +156,7 @@ public final class ComputerGui extends MapGui {
             };
 
             if (turtle) {
-                var xi = termX + terminal.getRenderedWidth() + 32;
+                var xi = termX + terminal.renderedWidth() + 32;
                 var yi = termY - 28;
                 var inv = new TurtleInventoryView(xi, yi, this, (TurtleMenu) this.wrapped);
                 this.renderer.add(inv);
@@ -242,33 +242,33 @@ public final class ComputerGui extends MapGui {
 
             this.renderer.add(new ImageView(
                     termX, termY - compText.top().getHeight(),
-                    new RepeatingCanvas(compText.top(), terminal.getRenderedWidth(), compText.top().getHeight())
+                    new RepeatingCanvas(compText.top(), terminal.renderedWidth(), compText.top().getHeight())
                 )
             );
 
             this.renderer.add(new ImageView(
-                    termX, termY + terminal.getRenderedHeight(),
-                    new RepeatingCanvas(compText.bottom(), terminal.getRenderedWidth(), compText.bottom().getHeight())
+                    termX, termY + terminal.renderedHeight(),
+                    new RepeatingCanvas(compText.bottom(), terminal.renderedWidth(), compText.bottom().getHeight())
                 )
             );
 
             this.renderer.add(new ImageView(
                     termX - compText.leftSide().getWidth(), termY,
-                    new RepeatingCanvas(compText.leftSide(), compText.leftSide().getWidth(), terminal.getRenderedHeight())
+                    new RepeatingCanvas(compText.leftSide(), compText.leftSide().getWidth(), terminal.renderedHeight())
                 )
             );
 
             this.renderer.add(new ImageView(
-                    termX + terminal.getRenderedWidth(), termY,
-                    new RepeatingCanvas(compText.rightSide(), compText.rightSide().getWidth(), terminal.getRenderedHeight())
+                    termX + terminal.renderedWidth(), termY,
+                    new RepeatingCanvas(compText.rightSide(), compText.rightSide().getWidth(), terminal.renderedHeight())
                 )
             );
 
             this.renderer.add(new ImageView(termX - compText.leftTop().getWidth(), termY - compText.leftTop().getHeight(), compText.leftTop()));
-            this.renderer.add(new ImageView(termX + terminal.getRenderedWidth(), termY - compText.rightTop().getHeight(), compText.rightTop()));
+            this.renderer.add(new ImageView(termX + terminal.renderedWidth(), termY - compText.rightTop().getHeight(), compText.rightTop()));
 
-            this.renderer.add(new ImageView(termX - compText.leftBottom().getWidth(), termY + terminal.getRenderedHeight(), compText.leftBottom()));
-            this.renderer.add(new ImageView(termX + terminal.getRenderedWidth(), termY + terminal.getRenderedHeight(), compText.rightBottom()));
+            this.renderer.add(new ImageView(termX - compText.leftBottom().getWidth(), termY + terminal.renderedHeight(), compText.leftBottom()));
+            this.renderer.add(new ImageView(termX + terminal.renderedWidth(), termY + terminal.renderedHeight(), compText.rightBottom()));
 
             this.renderer.add(terminalView);
 

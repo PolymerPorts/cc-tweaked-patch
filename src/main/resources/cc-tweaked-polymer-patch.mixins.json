@@ -23,6 +23,7 @@
     "mod.item.ModRegistryCreativeTabsMixin",
     "mod.item.ModRegistryItemsMixin",
     "mod.item.PocketComputerItemMixin",
+    "mod.item.PocketServerComputerMixin",
     "mod.item.RecipeMixin",
     "mod.item.SimpleColoredItemMixin",
     "mod.item.TurtleItemMixin",

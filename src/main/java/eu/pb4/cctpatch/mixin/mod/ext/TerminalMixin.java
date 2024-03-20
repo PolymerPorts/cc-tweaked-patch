@@ -4,6 +4,7 @@ import dan200.computercraft.core.terminal.Terminal;
 import dan200.computercraft.core.terminal.TextBuffer;
 import dan200.computercraft.core.util.Colour;
 import eu.pb4.cctpatch.impl.poly.Fonts;
+import eu.pb4.cctpatch.impl.poly.TerminalRenderer;
 import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.CanvasImage;
@@ -18,66 +19,33 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @SuppressWarnings({"MissingUnique", "AddedMixinMembersNamePattern"})
 @Mixin(value = Terminal.class, remap = false)
 public abstract class TerminalMixin implements TerminalExt {
-    @Shadow protected int height;
+    private final TerminalRenderer renderer = new TerminalRenderer((Terminal) (Object) this,
+            Fonts.TERMINAL_FONT, Fonts.FONT_WIDTH, Fonts.FONT_HEIGHT, 8);
 
-    @Shadow public abstract TextBuffer getLine(int y);
-
-    @Shadow public abstract TextBuffer getBackgroundColourLine(int y);
-
-    @Shadow public abstract TextBuffer getTextColourLine(int y);
-
-    @Shadow protected int width;
-    @Shadow protected boolean cursorBlink;
-    @Shadow protected int cursorX;
-    @Shadow protected int cursorY;
-    private long lastCanvasUpdate = -1;
-    private CanvasImage canvasImage;
+    private final TerminalRenderer rendererMini = new TerminalRenderer((Terminal) (Object) this,
+            Fonts.MINI_TERMINAL_FONT, Fonts.MINI_FONT_WIDTH, Fonts.MINI_FONT_HEIGHT, 8);
 
     @Inject(method = "<init>(IIZLjava/lang/Runnable;)V", at = @At("TAIL"))
     private void setupImage(int width, int height, boolean colour, Runnable changedCallback, CallbackInfo ci) {
-        this.canvasImage = new CanvasImage(width * Fonts.FONT_WIDTH, height * Fonts.FONT_HEIGHT);
+        this.renderer.setColor(colour);
+        this.renderer.init(width, height);
+        this.rendererMini.setColor(colour);
+        this.rendererMini.init(width, height);
     }
 
     @Inject(method = "resize", at = @At("TAIL"))
     private void resizeImage(int width, int height, CallbackInfo ci) {
-        this.canvasImage = new CanvasImage(width * Fonts.FONT_WIDTH, height * Fonts.FONT_HEIGHT);
-        this.lastCanvasUpdate = -1;
+        this.renderer.init(width, height);
+        this.rendererMini.init(width, height);
     }
 
-    public DrawableCanvas getRendered(long tick) {
-        if (this.lastCanvasUpdate < tick) {
-            CanvasUtils.clear(this.canvasImage, CanvasColor.BLACK_LOWEST);
-            for (int y = 0; y < this.height; y++) {
-                var line = this.getLine(y);
-                var bgColor = this.getBackgroundColourLine(y);
-                var color = this.getTextColourLine(y);
-                for (int x = 0; x < this.width; x++) {
-                    CanvasUtils.fill(this.canvasImage, x * Fonts.FONT_WIDTH, y * Fonts.FONT_HEIGHT, x * Fonts.FONT_WIDTH + Fonts.FONT_WIDTH, y * Fonts.FONT_HEIGHT + Fonts.FONT_HEIGHT,
-                            CanvasUtils.findClosestColor(Colour.fromInt(15 - Terminal.getColour(bgColor.charAt(x), Colour.BLACK)).getHex()));
-                    Fonts.TERMINAL_FONT.drawGlyph(this.canvasImage, line.charAt(x), x * (Fonts.FONT_WIDTH), y * (Fonts.FONT_HEIGHT), 8, 0,
-                            CanvasUtils.findClosestColor(Colour.fromInt(15 - Terminal.getColour(color.charAt(x), Colour.BLACK)).getHex()));
-                }
-            }
-
-            if (this.cursorBlink && tick % 20 > 10) {
-                CanvasUtils.fill(this.canvasImage,
-                        this.cursorX * Fonts.FONT_WIDTH, this.cursorY * Fonts.FONT_HEIGHT,
-                        this.cursorX * Fonts.FONT_WIDTH + Fonts.FONT_WIDTH, this.cursorY * Fonts.FONT_HEIGHT + Fonts.FONT_HEIGHT,
-                        CanvasColor.WHITE_GRAY_HIGH
-                );
-            }
-
-            this.lastCanvasUpdate = tick;
-
-        }
-        return this.canvasImage;
+    @Override
+    public TerminalRenderer getRenderer() {
+        return renderer;
     }
 
-    public int getRenderedHeight() {
-        return this.canvasImage.getHeight();
-    }
-
-    public int getRenderedWidth() {
-        return this.canvasImage.getWidth();
+    @Override
+    public TerminalRenderer getMiniRenderer() {
+        return rendererMini;
     }
 }

@@ -6,8 +6,11 @@ import dan200.computercraft.shared.computer.items.AbstractComputerItem;
 import dan200.computercraft.shared.media.items.PrintoutItem;
 import dan200.computercraft.shared.media.items.TreasureDiskItem;
 import dan200.computercraft.shared.peripheral.modem.wired.CableBlockItem;
+import dan200.computercraft.shared.pocket.core.PocketServerComputer;
 import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
+import eu.pb4.cctpatch.impl.poly.ext.ServerComputerExt;
+import eu.pb4.cctpatch.impl.poly.model.PocketComputerModel;
 import eu.pb4.factorytools.api.item.AutoModeledPolymerItem;
 import eu.pb4.factorytools.api.item.FireworkStarColoredItem;
 import eu.pb4.factorytools.api.item.RegistryCallbackItem;
@@ -22,76 +25,54 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin({ PocketComputerItem.class })
-public class PocketComputerItemMixin implements RegistryCallbackItem, PolymerItem {
+public abstract class PocketComputerItemMixin implements RegistryCallbackItem, PolymerItem {
     @Unique
-    private PolymerModelData defaultModel;
-    @Unique
-    private PolymerModelData onModel;
-    @Unique
-    private PolymerModelData blinkingModel;
-    @Unique
-    private PolymerModelData dyedModel;
-    @Unique
-    private PolymerModelData onDyedModel;
-    @Unique
-    private PolymerModelData blinkingDyedModel;
+    private PocketComputerModel model;
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return getModelData(itemStack).item();
+        return this.model.getModelData(itemStack).item();
     }
 
     @Override
     public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return getModelData(itemStack).value();
+        return this.model.getModelData(itemStack).value();
     }
-
-    @Unique
-    private PolymerModelData getModelData(ItemStack itemStack) {
-        var computer = PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, itemStack);
-        var state = computer != null ? computer.getState() : ComputerState.OFF;
-        if (IColouredItem.getColourBasic(itemStack) != -1) {
-            return switch (state) {
-                case OFF -> dyedModel;
-                case ON -> onDyedModel;
-                case BLINKING -> blinkingDyedModel;
-            };
-        }
-
-        return switch (state) {
-            case OFF -> defaultModel;
-            case ON -> onModel;
-            case BLINKING -> blinkingModel;
-        };
-    }
-
     @Override
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
         var stack = PolymerItemUtils.createItemStack(itemStack, context, player);
+        var data = this.model.getModelData(itemStack);
         var color = IColouredItem.getColourBasic(itemStack);
-        if (color != -1) {
+        if (data.item() == Items.FIREWORK_STAR) {
             var ex = new NbtCompound();
             var c = new NbtIntArray(new int[]{color});
             ex.put("Colors", c);
             stack.getOrCreateNbt().put("Explosion", ex);
+        } else if (data.item() == Items.FILLED_MAP) {
+            var display = stack.getOrCreateNbt().getCompound("display");
+            display.putInt("MapColor", color != -1 ? color : 0xffffff);
+
+            if (player != null) {
+                var computer = PocketComputerItem.getServerComputer(player.server, itemStack);
+                if (computer != null) {
+                    stack.getOrCreateNbt().putInt("map", ServerComputerExt.of(computer).getMapId());
+                }
+            }
         }
         return stack;
     }
 
     @Override
     public void onRegistered(Identifier selfId) {
-        this.defaultModel = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(), selfId.withPrefixedPath("item/"));
-        this.onModel = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(), selfId.withPrefixedPath("item/").withSuffixedPath("_on"));
-        this.blinkingModel = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(), selfId.withPrefixedPath("item/").withSuffixedPath("_blinking"));
-        this.dyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour"));
-        this.onDyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour_on"));
-        this.blinkingDyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour_blinking"));
+        this.model = PocketComputerModel.from(selfId);
     }
 }

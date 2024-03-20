@@ -184,7 +184,7 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
                 CanvasUtils.fill(image, 16, 16, image.getWidth() - 16, image.getHeight() - 16, CanvasColor.BLACK_NORMAL);
 
                 assert this.world != null;
-                var screen = TerminalExt.of(monitor.getTerminal()).getRendered(this.world.getTime());
+                var screen = TerminalExt.of(monitor.getTerminal()).getRenderer().getImage(this.world.getTime());
                 var scale = ServerMonitorExt.of(monitor).getTextScalePublic();
 
                 int sWidth = (int) (screen.getWidth() * scale);

@@ -273,7 +273,7 @@ public class MapGui extends HotbarGui {
 
 
     public boolean preventPacket(Packet<?> packet) {
-        if (packet instanceof GameStateChangeS2CPacket state) {
+        if (packet instanceof GameStateChangeS2CPacket state && this.blockWeather) {
             return state.getReason() == GameStateChangeS2CPacket.GAME_MODE_CHANGED
                     || state.getReason() == GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED
                     || state.getReason() == GameStateChangeS2CPacket.RAIN_STARTED
