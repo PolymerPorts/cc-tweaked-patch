@@ -19,8 +19,6 @@ public abstract class PocketServerComputerMixin implements ServerComputerExt {
     @Shadow @Nullable
     private Entity entity;
 
-    @Shadow @Nullable public abstract Entity getEntity();
-
     @Unique
     private final PocketComputerRenderer renderer = new PocketComputerRenderer((PocketServerComputer) (Object) this);
 

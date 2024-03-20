@@ -1,9 +1,10 @@
-package eu.pb4.cctpatch.impl.poly;
+package eu.pb4.cctpatch.impl.poly.font;
 
 import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
 import eu.pb4.mapcanvas.api.font.BitmapFontBuilder;
 import eu.pb4.mapcanvas.api.font.CanvasFont;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
+import it.unimi.dsi.fastutil.ints.Int2IntArrayMap;
 import net.fabricmc.loader.api.FabricLoader;
 
 import javax.imageio.ImageIO;
@@ -41,14 +42,38 @@ public class Fonts {
                 b[i] = (byte) i;
             }
 
+            /*try {
+                var remapped = new String(b, StandardCharsets.ISO_8859_1);
+
+                var map = new Int2IntArrayMap();
+
+                var cp437 = Files.readAllLines(FabricLoader.getInstance().getModContainer(ComputerCraftPolymerPatch.MOD_ID)
+                        .get().findPath("cp437.ucm").get());
+
+                for (var l : cp437) {
+                    if (l.startsWith("#") || l.startsWith("\u001A")) {
+                        continue;
+                    }
+                    var x = l.split("[\t ]");
+                    map.put(Integer.parseInt(x[1].replace("0x", ""), 16),
+                            Integer.parseInt(x[0].replace("0x", ""), 16));
+                }
+
+
+                for (int i = 0; i < 256; i++) {
+                    b[i] = (byte) map.get(remapped.charAt(i));
+                }
+            } catch (Throwable e) {
+                e.printStackTrace();
+            }*/
+
             try {
                 var builderSmall = BitmapFontBuilder.create();
                 var builder = BitmapFontBuilder.create();
                 var builderBack = BitmapFontBuilder.create();
 
                 buildFontCC(texturePath, builder, builderBack, FONT_HEIGHT, FONT_WIDTH);
-                buildFontZoo(texturePathZoo, builderSmall, MINI_FONT_HEIGHT, MINI_FONT_WIDTH,
-                        new String(b, StandardCharsets.ISO_8859_1).getBytes("cp437"));
+                buildFontZoo(texturePathZoo, builderSmall, MINI_FONT_HEIGHT, MINI_FONT_WIDTH, b);
 
                 fontSmall = builderSmall.defaultGlyph(emptyGlyph).build();
                 font = builder.defaultGlyph(emptyGlyph).build();

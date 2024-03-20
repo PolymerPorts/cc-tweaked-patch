@@ -3,7 +3,7 @@ package eu.pb4.cctpatch.impl.poly.gui;
 import dan200.computercraft.core.terminal.Terminal;
 import dan200.computercraft.core.util.Colour;
 import dan200.computercraft.shared.media.items.PrintoutItem;
-import eu.pb4.cctpatch.impl.poly.Fonts;
+import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.render.CenteredTextView;
 import eu.pb4.cctpatch.impl.poly.render.ImageView;
 import eu.pb4.cctpatch.impl.poly.render.TextButton;

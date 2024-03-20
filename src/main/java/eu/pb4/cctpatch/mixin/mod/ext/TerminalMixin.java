@@ -1,17 +1,10 @@
 package eu.pb4.cctpatch.mixin.mod.ext;
 
 import dan200.computercraft.core.terminal.Terminal;
-import dan200.computercraft.core.terminal.TextBuffer;
-import dan200.computercraft.core.util.Colour;
-import eu.pb4.cctpatch.impl.poly.Fonts;
+import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.TerminalRenderer;
 import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
-import eu.pb4.mapcanvas.api.core.CanvasColor;
-import eu.pb4.mapcanvas.api.core.CanvasImage;
-import eu.pb4.mapcanvas.api.core.DrawableCanvas;
-import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;

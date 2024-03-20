@@ -284,7 +284,7 @@ public class MapGui extends HotbarGui {
                 return false;
             } else if (this.player.getEyePos().squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
                 var pos = camera.add(this.player.getEyePos().subtract(sound.getX(), sound.getY(), sound.getZ())
-                        .rotateY(this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE)
+                        .rotateY(-this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE)
                         .rotateX(this.player.getPitch() * MathHelper.RADIANS_PER_DEGREE)
                 );
                 this.player.networkHandler.sendPacket(new PlaySoundS2CPacket(sound.getSound(), sound.getCategory(), pos.x, pos.y, pos.z, sound.getVolume(), sound.getPitch(), sound.getSeed()));

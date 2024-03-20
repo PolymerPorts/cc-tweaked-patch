@@ -2,7 +2,8 @@ package eu.pb4.cctpatch.impl;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import eu.pb4.cctpatch.impl.poly.Fonts;
+import eu.pb4.cctpatch.impl.config.PatchConfig;
+import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
@@ -18,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import javax.imageio.ImageIO;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 public class ComputerCraftPolymerPatch implements ModInitializer {
@@ -30,14 +30,14 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 	public void onInitialize() {
 		Fonts.TERMINAL_FONT.hashCode();
 		GuiTextures.ADVANCED_COMPUTER.hashCode();
-
 		TurtleModel.CRAFTING_MODEL.left();
+		PatchConfig.instance.hashCode();
 
 		PolymerResourcePackUtils.addModAssets("computercraft");
 		PolymerResourcePackUtils.addModAssets(MOD_ID);
-
 		ServerLifecycleEvents.SERVER_STARTING.register((server1 -> server = server1));
 		ServerLifecycleEvents.SERVER_STOPPED.register((server1 -> server = null));
+		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((a, b, c) -> PatchConfig.loadOrCreateConfig()));
 
 		PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(builder -> {
 			builder.addWriteConverter((path, data) -> {

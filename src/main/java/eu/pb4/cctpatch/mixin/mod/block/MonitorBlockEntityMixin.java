@@ -4,7 +4,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.shared.peripheral.monitor.MonitorBlock;
 import dan200.computercraft.shared.peripheral.monitor.MonitorBlockEntity;
 import dan200.computercraft.shared.peripheral.monitor.ServerMonitor;
-import eu.pb4.cctpatch.impl.poly.Fonts;
+import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.ext.ServerMonitorExt;
 import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
