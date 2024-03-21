@@ -12,6 +12,8 @@ import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
 import dan200.computercraft.shared.turtle.upgrades.TurtleModem;
 import dan200.computercraft.shared.turtle.upgrades.TurtleSpeaker;
 import dan200.computercraft.shared.turtle.upgrades.TurtleTool;
+import dan200.computercraft.shared.util.Holiday;
+import eu.pb4.cctpatch.impl.poly.model.generic.BlockStateModelManager;
 import eu.pb4.cctpatch.mixin.TurtleModemAccessor;
 import eu.pb4.cctpatch.mixin.TurtleToolAccessor;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
@@ -44,6 +46,7 @@ import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class TurtleModel extends BlockModel {
@@ -52,8 +55,11 @@ public class TurtleModel extends BlockModel {
     public static final SidedModel SPEAKER_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_speaker"));
     public static final SidedModel CRAFTING_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_crafting_table"));
     public static final ItemStack COLORED_TURTLE_MODEL = BaseItemProvider.requestModel(Items.FIREWORK_STAR, new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
+    public static final Identifier ELF_OVERLAY_MODEL = new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
 
+    private static final Map<Identifier, ItemStack> OVERLAYS = new HashMap<>();
     private final ItemDisplayElement base;
+    private final ItemDisplayElement overlay;
     private final ItemDisplayElement leftAttachment;
     private final ItemDisplayElement rightAttachment;
 
@@ -62,6 +68,13 @@ public class TurtleModel extends BlockModel {
     private ITurtleUpgrade rightUpgrade;
     private Vec3d lastPos;
     private int color = -1;
+    private Identifier overlayId;
+
+    public static void registerOverlay(Identifier identifier) {
+        if (!OVERLAYS.containsKey(identifier)) {
+            OVERLAYS.put(identifier, BaseItemProvider.requestModel(identifier));
+        }
+    }
 
     public TurtleModel(BlockState state, BlockPos pos) {
         this.lastPos = Vec3d.ofCenter(pos);
@@ -70,6 +83,10 @@ public class TurtleModel extends BlockModel {
         this.base.setTeleportDuration(1);
         this.base.setModelTransformation(ModelTransformationMode.NONE);
         this.base.setYaw(this.baseYaw);
+        this.overlay = ItemDisplayElementUtil.createSimple();
+        this.overlay.setTeleportDuration(1);
+        this.overlay.setModelTransformation(ModelTransformationMode.NONE);
+        this.overlay.setYaw(this.baseYaw);
         this.leftAttachment = ItemDisplayElementUtil.createSimple();
         this.leftAttachment.setInterpolationDuration(1);
         this.leftAttachment.setModelTransformation(ModelTransformationMode.NONE);
@@ -79,6 +96,7 @@ public class TurtleModel extends BlockModel {
         this.rightAttachment.setModelTransformation(ModelTransformationMode.NONE);
         this.rightAttachment.setYaw(this.baseYaw);
         this.addElement(this.base);
+        this.addElement(this.overlay);
         this.addElement(this.leftAttachment);
         this.addElement(this.rightAttachment);
     }
@@ -86,7 +104,8 @@ public class TurtleModel extends BlockModel {
     @Override
     protected void startWatchingExtraPackets(ServerPlayNetworkHandler player, Consumer<Packet<ClientPlayPacketListener>> packetConsumer) {
         super.startWatchingExtraPackets(player, packetConsumer);
-        packetConsumer.accept(VirtualEntityUtils.createRidePacket(this.base.getEntityId(), IntList.of(this.leftAttachment.getEntityId(), this.rightAttachment.getEntityId())));
+        packetConsumer.accept(VirtualEntityUtils.createRidePacket(this.base.getEntityId(), IntList.of(this.leftAttachment.getEntityId(),
+                this.rightAttachment.getEntityId(), this.overlay.getEntityId())));
     }
 
     @Override
@@ -100,6 +119,7 @@ public class TurtleModel extends BlockModel {
 
         this.baseYaw = yaw;
         this.base.setYaw(this.baseYaw);
+        this.overlay.setYaw(this.baseYaw);
         this.leftAttachment.setYaw(this.baseYaw);
         this.rightAttachment.setYaw(this.baseYaw);
     }
@@ -149,6 +169,19 @@ public class TurtleModel extends BlockModel {
                 ex.put("Colors", c);
                 model.getOrCreateNbt().put("Explosion", ex);
                 this.base.setItem(model);
+            }
+        }
+
+        {
+            var overlay = turtleBrain.getOverlay();
+
+            if (overlay == null && Holiday.getCurrent() == Holiday.CHRISTMAS) {
+                overlay = ELF_OVERLAY_MODEL;
+            }
+
+            if (!Objects.equals(this.overlayId, overlay)) {
+                this.overlayId = overlay;
+                this.overlay.setItem(OVERLAYS.getOrDefault(this.overlayId, ItemStack.EMPTY));
             }
         }
 

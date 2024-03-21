@@ -4,13 +4,16 @@ import com.google.common.base.Predicates;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
+import com.mojang.datafixers.util.Pair;
 import eu.pb4.cctpatch.impl.poly.render.CanvasRenderer;
 import eu.pb4.cctpatch.impl.poly.render.ImageButton;
 import eu.pb4.cctpatch.impl.poly.render.ScreenElement;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
+import eu.pb4.cctpatch.mixin.ServerPlayNetworkHandlerAccessor;
 import eu.pb4.mapcanvas.api.core.*;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
+import eu.pb4.playerdata.api.PlayerDataApi;
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
@@ -34,6 +37,9 @@ import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapIcon;
+import net.minecraft.nbt.NbtHelper;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
@@ -41,6 +47,7 @@ import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -53,6 +60,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class MapGui extends HotbarGui {
+
+    private static final Identifier DISTANCE_STORAGE_ID = new Identifier("cct-patch", "view_shift");
+    private static final Vec3d DEFAULT_SHIFT = new Vec3d(0, 0, 1);
     private static final Packet<?> COMMAND_PACKET;
     public final CombinedPlayerCanvas canvas;
     public final VirtualDisplay virtualDisplay;
@@ -90,7 +100,10 @@ public class MapGui extends HotbarGui {
         this.holder.startWatching(player);
 
         this.cameraPoint = new BlockDisplayElement();
-        this.cameraPoint.setOffset(new Vec3d(-this.canvas.getSectionsWidth() / 2d, -this.canvas.getSectionsHeight() / 2d, -1.8));
+        var x = PlayerDataApi.getGlobalDataFor(this.player, DISTANCE_STORAGE_ID);
+
+        this.setDistance(x != null ? Vec3d.CODEC.decode(NbtOps.INSTANCE, x).result()
+                .map(Pair::getFirst).orElse(DEFAULT_SHIFT) : DEFAULT_SHIFT);
         this.holder.addElement(this.cameraPoint);
 
         var horse = new SimpleEntityElement(EntityType.HORSE);
@@ -128,11 +141,11 @@ public class MapGui extends HotbarGui {
         this.blockWeather = true;
 
         for (int i = 0; i < 9; i++) {
-            this.setSlot(i, new ItemStack(Items.STICK));
+            this.setSlot(i, new ItemStack(Items.ENDER_EYE));
         }
 
-        //player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("polyport.cc.press_to_close", "Ctrl", "Q (Drop)")
-        //    .formatted(Formatting.DARK_RED), true));
+        player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("text.cctpatch.exit", "Ctrl", Text.keybind("key.drop"))
+                .formatted(Formatting.RED), true));
     }
 
     public void render() {
@@ -154,6 +167,8 @@ public class MapGui extends HotbarGui {
     @Override
     public void onTick() {
         this.holder.tick();
+        ((ServerPlayNetworkHandlerAccessor) this.player.networkHandler).setVehicleFloatingTicks(0);
+        ((ServerPlayNetworkHandlerAccessor) this.player.networkHandler).setFloatingTicks(0);
         this.render();
     }
 
@@ -198,7 +213,7 @@ public class MapGui extends HotbarGui {
 
     public void onCameraMove(float xRot, float yRot) {
         this.mouseMoves++;
-        if (this.mouseMoves < 2) {
+        if (this.mouseMoves < 4) {
             return;
         }
 
@@ -232,9 +247,11 @@ public class MapGui extends HotbarGui {
         return super.onClickEntity(entityId, type, isSneaking, interactionPos);
     }
 
-    public void setDistance(double i) {
-        var offset = this.cameraPoint.getOffset();
-        this.cameraPoint.setOffset(new Vec3d(offset.x, offset.y, -0.8 - i));
+    public void setDistance(Vec3d vec) {
+        PlayerDataApi.setGlobalDataFor(this.player, DISTANCE_STORAGE_ID, Vec3d.CODEC.encodeStart(NbtOps.INSTANCE, vec)
+                .result().get());
+
+        this.cameraPoint.setOffset(new Vec3d(-this.canvas.getSectionsWidth() / 2d - vec.x, -this.canvas.getSectionsHeight() / 2d + vec.y, -0.8 - vec.z));
         this.cameraPoint.tick();
     }
 

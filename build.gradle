@@ -49,13 +49,13 @@ dependencies {
 	modImplementation "cc.tweaked:cc-tweaked-1.20.4-fabric:1.109.6"
 
 	modImplementation include('eu.pb4:sgui:1.4.1+1.20.4')
+	modImplementation include('eu.pb4:player-data-api:0.4.0+1.20.3')
 	modImplementation include('eu.pb4:map-canvas-api:0.2.2+1.19.4')
 	modImplementation include('eu.pb4:factorytools:0.1.8+1.20.4')
-	modImplementation include('eu.pb4:polymer-core:0.7.6+1.20.4')
-	modImplementation include('eu.pb4:polymer-resource-pack:0.7.6+1.20.4')
-	modImplementation include('eu.pb4:polymer-autohost:0.7.6+1.20.4')
-	modImplementation include('eu.pb4:polymer-virtual-entity:0.7.6+1.20.4')
-	modImplementation include("xyz.nucleoid:server-translations-api:2.2.0+1.20.3-rc1")
+	modImplementation 'eu.pb4:polymer-core:0.7.6+1.20.4'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.7.6+1.20.4'
+	modImplementation 'eu.pb4:polymer-autohost:0.7.6+1.20.4'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.7.6+1.20.4'
 
 
 	modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {

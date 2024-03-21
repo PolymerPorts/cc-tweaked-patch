@@ -3,7 +3,9 @@
   "package": "eu.pb4.cctpatch.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "ServerPlayNetworkHandlerAccessor",
     "TurtleModemAccessor",
+    "TurtleOverlayRecipeAccessor",
     "TurtleToolAccessor",
     "mod.PlatformHelperImplRegistryEntryImplMixin",
     "mod.ServerNetworkingMixin",
@@ -27,6 +29,7 @@
     "mod.item.RecipeMixin",
     "mod.item.SimpleColoredItemMixin",
     "mod.item.TurtleItemMixin",
+    "poly.EntityMixin",
     "poly.PlayerEntityMixin",
     "poly.ServerCommonNetworkHandlerMixin",
     "poly.ServerPlayerEntityMixin",

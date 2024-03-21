@@ -91,12 +91,16 @@ public final class ComputerGui extends MapGui {
 
         ACTIONS.put("moveview", (gui, arg) -> {
             try {
-                double i = Math.min(Math.max(Double.parseDouble(arg), 1), 8);
-                gui.setDistance(i);
+                var args = arg.split(" ");
+                double z = args.length > 0 && !args[0].isEmpty() ? Math.min(Math.max(Double.parseDouble(args[0]), 1), 8) : 1;
+                double x = args.length > 1 && !args[1].isEmpty() ? Math.min(Math.max(Double.parseDouble(args[1]), -8), 8) : 0;
+                gui.setDistance(new Vec3d(x, 0, z));
             } catch (Exception e) {
                 gui.player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.empty(), true));
             }
         });
+
+        ACTIONS.put("view", ACTIONS.get("moveview"));
 
 
         var list = ACTIONS.keySet().stream().map(x -> ";" + x).collect(Collectors.toList());
@@ -334,6 +338,7 @@ public final class ComputerGui extends MapGui {
     public void onTick() {
         if (this.wrapped.canUse(this.player)) {
             this.render();
+            super.onTick();
         } else {
             this.close();
         }

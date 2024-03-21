@@ -8,7 +8,6 @@ import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import net.minecraft.inventory.Inventory;
-import xyz.nucleoid.server.translations.api.Localization;
 
 public class TurtleInventoryView extends ScreenElement {
     private final ComputerGui gui;
@@ -57,7 +56,8 @@ public class TurtleInventoryView extends ScreenElement {
                 text = "[Empty]";
                 canvasColor = this.wrapped.getSelectedSlot() == i ? CanvasColor.YELLOW_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
             } else {
-                var name = Localization.text(item.getName(), this.gui.getPlayer()).getString();
+                //var name = Localization.text(item.getName(), this.gui.getPlayer()).getString();
+                var name = item.getName().getString();
 
                 if (name.length() > 18) {
                     var delta = ((this.gui.getPlayer().age / 10) % (name.length() - 18));

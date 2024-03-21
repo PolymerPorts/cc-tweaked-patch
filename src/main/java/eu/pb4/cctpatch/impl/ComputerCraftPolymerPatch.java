@@ -2,16 +2,20 @@ package eu.pb4.cctpatch.impl;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.shared.turtle.recipes.TurtleOverlayRecipe;
 import eu.pb4.cctpatch.impl.config.PatchConfig;
 import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
+import eu.pb4.cctpatch.mixin.TurtleOverlayRecipeAccessor;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,9 +39,25 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 
 		PolymerResourcePackUtils.addModAssets("computercraft");
 		PolymerResourcePackUtils.addModAssets(MOD_ID);
-		ServerLifecycleEvents.SERVER_STARTING.register((server1 -> server = server1));
+		ServerLifecycleEvents.SERVER_STARTING.register((server1 -> {
+			server = server1;
+			for (var x : server1.getRecipeManager().values()) {
+				if (x.value() instanceof TurtleOverlayRecipe turtleOverlayRecipe) {
+					TurtleModel.registerOverlay(((TurtleOverlayRecipeAccessor) turtleOverlayRecipe).getOverlay());
+				}
+			}
+		}));
 		ServerLifecycleEvents.SERVER_STOPPED.register((server1 -> server = null));
-		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((a, b, c) -> PatchConfig.loadOrCreateConfig()));
+		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((a, b, c) -> {
+			PatchConfig.loadOrCreateConfig();
+			for (var x : a.getRecipeManager().values()) {
+				if (x.value() instanceof TurtleOverlayRecipe turtleOverlayRecipe) {
+					TurtleModel.registerOverlay(((TurtleOverlayRecipeAccessor) turtleOverlayRecipe).getOverlay());
+				}
+			}
+		}));
+
+		TurtleModel.registerOverlay(TurtleModel.ELF_OVERLAY_MODEL);
 
 		PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(builder -> {
 			builder.addWriteConverter((path, data) -> {
