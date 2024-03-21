@@ -26,12 +26,6 @@ public abstract class PocketServerComputerMixin implements ServerComputerExt {
     private void onRemovedCall(CallbackInfo ci) {
         this.renderer.onRemoved(this.entity);
     }
-
-    @Inject(method = "onTerminalChanged", at = @At(value = "INVOKE", target = "Ldan200/computercraft/shared/network/server/ServerNetworking;sendToPlayer(Ldan200/computercraft/shared/network/NetworkMessage;Lnet/minecraft/server/network/ServerPlayerEntity;)V"))
-    private void onTerminalChangedCall(CallbackInfo ci) {
-        this.renderer.onRendererChanged(this.entity);
-    }
-
     @Inject(method = "updateValues", at = @At("HEAD"))
     private void onUpdateValues(Entity entity, ItemStack stack, IPocketUpgrade upgrade, CallbackInfo ci) {
         this.renderer.updateValues(entity);

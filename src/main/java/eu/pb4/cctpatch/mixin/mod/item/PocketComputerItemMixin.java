@@ -25,6 +25,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
+import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -32,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin({ PocketComputerItem.class })
 public abstract class PocketComputerItemMixin implements RegistryCallbackItem, PolymerItem {
@@ -40,17 +43,17 @@ public abstract class PocketComputerItemMixin implements RegistryCallbackItem, P
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return this.model.getModelData(itemStack).item();
+        return this.model.getModelData(itemStack, isPlayerboundPacket()).item();
     }
 
     @Override
     public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
-        return this.model.getModelData(itemStack).value();
+        return this.model.getModelData(itemStack, isPlayerboundPacket()).value();
     }
     @Override
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
         var stack = PolymerItemUtils.createItemStack(itemStack, context, player);
-        var data = this.model.getModelData(itemStack);
+        var data = this.model.getModelData(itemStack, isPlayerboundPacket());
         var color = IColouredItem.getColourBasic(itemStack);
         if (data.item() == Items.FIREWORK_STAR) {
             var ex = new NbtCompound();
@@ -69,6 +72,12 @@ public abstract class PocketComputerItemMixin implements RegistryCallbackItem, P
             }
         }
         return stack;
+    }
+
+    @Unique
+    private boolean isPlayerboundPacket() {
+        var ctx = PacketContext.get();
+        return ctx.getEncodedPacket() instanceof InventoryS2CPacket || ctx.getEncodedPacket() instanceof ScreenHandlerSlotUpdateS2CPacket;
     }
 
     @Override

@@ -39,21 +39,21 @@ public record PocketComputerModel(PolymerModelData defaultModel,
         return new PocketComputerModel(defaultModel, onModel, onModelNoScreen, blinkingModel, blinkingModelNoScreen, dyedModel, onDyedModel, onDyedModelNoScreen, blinkingDyedModel, blinkingDyedModelNoScreen);
     }
 
-    public PolymerModelData getModelData(ItemStack itemStack) {
+    public PolymerModelData getModelData(ItemStack itemStack, boolean useMapView) {
         var computer = PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, itemStack);
         var state = computer != null ? computer.getState() : ComputerState.OFF;
         if (IColouredItem.getColourBasic(itemStack) != -1) {
             return switch (state) {
                 case OFF -> dyedModel;
-                case ON -> PatchConfig.instance.displayPocketComputerScreenInHand ? onDyedModel : onDyedModelNoScreen;
-                case BLINKING -> PatchConfig.instance.displayPocketComputerScreenInHand ? blinkingDyedModel : blinkingDyedModelNoScreen;
+                case ON -> useMapView && PatchConfig.instance.displayPocketComputerScreenInHand ? onDyedModel : onDyedModelNoScreen;
+                case BLINKING -> useMapView && PatchConfig.instance.displayPocketComputerScreenInHand ? blinkingDyedModel : blinkingDyedModelNoScreen;
             };
         }
 
         return switch (state) {
             case OFF -> defaultModel;
-            case ON -> PatchConfig.instance.displayPocketComputerScreenInHand ? onModel : onModelNoScreen;
-            case BLINKING -> PatchConfig.instance.displayPocketComputerScreenInHand ? blinkingModel : blinkingModelNoScreen;
+            case ON -> useMapView && PatchConfig.instance.displayPocketComputerScreenInHand ? onModel : onModelNoScreen;
+            case BLINKING -> useMapView && PatchConfig.instance.displayPocketComputerScreenInHand ? blinkingModel : blinkingModelNoScreen;
         };
     }
 }

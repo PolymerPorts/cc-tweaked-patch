@@ -35,9 +35,6 @@ public class PocketComputerRenderer {
         this.player = null;
     }
 
-    public void onRendererChanged(Entity entity) {
-    }
-
     public void tick(Entity entity) {
         var mut = new MutableObject<ItemStack>();
         if (PatchConfig.instance.displayPocketComputerScreenInHand && entity instanceof ServerPlayerEntity player
@@ -66,7 +63,7 @@ public class PocketComputerRenderer {
             this.drawUpdate();
             this.canvas.sendUpdates();
         } else if (this.canvas != null) {
-             this.canvas.destroy();
+            this.canvas.destroy();
             this.canvas = null;
             this.player = null;
         }
@@ -75,11 +72,15 @@ public class PocketComputerRenderer {
     private boolean findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
         if (player.getMainHandStack().getItem() instanceof PocketComputerItem
                 && PocketComputerItem.getServerComputer(player.server, player.getMainHandStack()) == this.computer) {
-            mut.setValue(player.getMainHandStack());
+            if (mut != null) {
+                mut.setValue(player.getMainHandStack());
+            }
             return true;
         } else if (player.getOffHandStack().getItem() instanceof PocketComputerItem
                 && PocketComputerItem.getServerComputer(player.server, player.getOffHandStack()) == this.computer) {
-            mut.setValue(player.getOffHandStack());
+            if (mut != null) {
+                mut.setValue(player.getOffHandStack());
+            }
             return true;
         }
         return false;
@@ -134,17 +135,13 @@ public class PocketComputerRenderer {
 
     public void updateValues(Entity entity) {
         if (PatchConfig.instance.displayPocketComputerScreenInHand && entity instanceof ServerPlayerEntity player
-                && ((player.getMainHandStack().getItem() instanceof PocketComputerItem
-                && PocketComputerItem.getServerComputer(player.server, player.getMainHandStack()) == this.computer)
-                || (player.getOffHandStack().getItem() instanceof PocketComputerItem
-                && PocketComputerItem.getServerComputer(player.server, player.getOffHandStack()) == this.computer))
+                && findStack(player, null)
         ) {
-            if (this.canvas == null) {
-                this.player = player;
-                this.canvas = DrawableCanvas.create();
-                this.drawInitial();
-                this.canvas.addPlayer(player);
-            }
+
+        } else if (this.canvas != null) {
+            this.canvas.destroy();
+            this.canvas = null;
+            this.player = null;
         }
     }
 
