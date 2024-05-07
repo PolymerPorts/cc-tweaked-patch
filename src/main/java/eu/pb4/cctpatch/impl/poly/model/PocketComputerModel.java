@@ -1,6 +1,5 @@
 package eu.pb4.cctpatch.impl.poly.model;
 
-import dan200.computercraft.shared.common.IColouredItem;
 import dan200.computercraft.shared.computer.core.ComputerState;
 import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
@@ -8,6 +7,7 @@ import eu.pb4.cctpatch.impl.config.PatchConfig;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
+import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
@@ -42,7 +42,7 @@ public record PocketComputerModel(PolymerModelData defaultModel,
     public PolymerModelData getModelData(ItemStack itemStack, boolean useMapView) {
         var computer = PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, itemStack);
         var state = computer != null ? computer.getState() : ComputerState.OFF;
-        if (IColouredItem.getColourBasic(itemStack) != -1) {
+        if (DyedColorComponent.getColor(itemStack, -1) != -1) {
             return switch (state) {
                 case OFF -> dyedModel;
                 case ON -> useMapView && PatchConfig.instance.displayPocketComputerScreenInHand ? onDyedModel : onDyedModelNoScreen;

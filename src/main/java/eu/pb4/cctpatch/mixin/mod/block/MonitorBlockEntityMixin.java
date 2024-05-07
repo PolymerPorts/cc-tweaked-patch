@@ -17,6 +17,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.BlockRotation;
@@ -80,7 +81,7 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
     }
 
     @Inject(method = "readNbt", at = @At("TAIL"))
-    private void onReadNbt(NbtCompound nbt, CallbackInfo ci) {
+    private void onReadNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries, CallbackInfo ci) {
         if (world != null) {
             this.updateDisplaySize();
         }

@@ -5,7 +5,6 @@
   "mixins": [
     "ServerPlayNetworkHandlerAccessor",
     "TurtleModemAccessor",
-    "TurtleOverlayRecipeAccessor",
     "TurtleToolAccessor",
     "mod.PlatformHelperImplRegistryEntryImplMixin",
     "mod.ServerNetworkingMixin",
@@ -23,7 +22,9 @@
     "mod.ext.TerminalMixin",
     "mod.item.GenericItemMixin",
     "mod.item.ModRegistryCreativeTabsMixin",
+    "mod.item.ModRegistryDataComponentsMixin",
     "mod.item.ModRegistryItemsMixin",
+    "mod.item.ModRegistryRecipeSerializersMixin",
     "mod.item.PocketComputerItemMixin",
     "mod.item.PocketServerComputerMixin",
     "mod.item.RecipeMixin",

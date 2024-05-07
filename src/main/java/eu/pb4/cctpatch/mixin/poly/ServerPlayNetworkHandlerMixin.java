@@ -32,11 +32,13 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         super(server, connection, clientData);
     }
 
-    @Shadow protected abstract Optional<LastSeenMessageList> validateMessage(LastSeenMessageList.Acknowledgment acknowledgment);
-
     @Shadow protected abstract SignedMessage getSignedMessage(ChatMessageC2SPacket packet, LastSeenMessageList lastSeenMessages) throws MessageChain.MessageChainException;
 
     @Shadow protected abstract void handleMessageChainException(MessageChain.MessageChainException exception);
+
+    @Shadow protected abstract void validateMessage(String message, Runnable callback);
+
+    @Shadow protected abstract Optional<LastSeenMessageList> validateAcknowledgment(LastSeenMessageList.Acknowledgment acknowledgment);
 
     @Inject(method = "onChatMessage", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ChatMessageC2SPacket packet, CallbackInfo ci) {
@@ -46,7 +48,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
             });
             ci.cancel();
 
-            Optional<LastSeenMessageList> optional = this.validateMessage(packet.acknowledgment());
+            Optional<LastSeenMessageList> optional = this.validateAcknowledgment(packet.acknowledgment());
             if (optional.isPresent()) {
                 this.server.submit(() -> {
                     try {
@@ -66,8 +68,6 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
                 computerGui.onCommandInput(packet.command());
             });
             ci.cancel();
-
-            this.validateMessage(packet.acknowledgment());
         }
     }
 

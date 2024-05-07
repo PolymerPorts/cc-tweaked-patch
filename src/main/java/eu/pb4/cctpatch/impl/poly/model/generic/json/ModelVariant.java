@@ -7,6 +7,7 @@ import net.minecraft.util.dynamic.Codecs;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 public record ModelVariant(Identifier model, int x, int y, boolean uvlock, int weigth) {
     private static final Codec<ModelVariant> BASE = RecordCodecBuilder.create(instance -> instance.group(
@@ -18,6 +19,6 @@ public record ModelVariant(Identifier model, int x, int y, boolean uvlock, int w
             ).apply(instance, ModelVariant::new)
     );
 
-    public static final Codec<List<ModelVariant>> CODEC = Codecs.either(BASE.listOf(), BASE, List::of);
+    public static final Codec<List<ModelVariant>> CODEC = Codec.withAlternative(BASE.listOf(), BASE, List::of);
     public static final Codec<Map<String, List<ModelVariant>>> MAP = Codec.unboundedMap(Codec.STRING, CODEC);
 }

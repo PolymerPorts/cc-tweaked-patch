@@ -15,8 +15,8 @@ import org.jetbrains.annotations.Nullable;
 
 public interface AutoModeledPolymerBlock extends FactoryBlock {
     @Override
-    default Block getPolymerBlock(BlockState state) {
-        return Blocks.BARRIER;
+    default BlockState getPolymerBlockState(BlockState state) {
+        return Blocks.BARRIER.getDefaultState();
     }
 
     @Override

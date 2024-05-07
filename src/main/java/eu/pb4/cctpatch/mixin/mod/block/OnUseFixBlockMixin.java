@@ -23,10 +23,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin({AbstractComputerBlock.class, HorizontalContainerBlock.class, MonitorBlock.class,
         WiredModemFullBlock.class, CableBlock.class })
 public class OnUseFixBlockMixin {
-    @Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
-    private void test(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
+    /*@Inject(method = "onUse", at = @At("HEAD"), cancellable = true)
+    private void test(BlockState state, World level, BlockPos pos, PlayerEntity player, BlockHitResult hit, CallbackInfoReturnable<ActionResult> cir) {
         if (hand == Hand.OFF_HAND) {
             cir.setReturnValue(ActionResult.FAIL);
         }
-    }
+    }*/
 }

@@ -43,16 +43,12 @@ public class BaseGson {
             .registerTypeHierarchyAdapter(StatusEffect.class, new RegistrySerializer<>(Registries.STATUS_EFFECT))
             .registerTypeHierarchyAdapter(EntityType.class, new RegistrySerializer<>(Registries.ENTITY_TYPE))
             .registerTypeHierarchyAdapter(BlockEntityType.class, new RegistrySerializer<>(Registries.BLOCK_ENTITY_TYPE))
-
-            .registerTypeHierarchyAdapter(Text.class, new Text.Serializer())
-
             //.registerTypeHierarchyAdapter(ItemStack.class, new CodecSerializer<>(ItemStack.CODEC))
-            .registerTypeHierarchyAdapter(ItemStack.class, new ItemStackSerializer())
             .registerTypeHierarchyAdapter(NbtCompound.class, new CodecSerializer<>(NbtCompound.CODEC))
             .registerTypeHierarchyAdapter(BlockPos.class, new CodecSerializer<>(BlockPos.CODEC))
             .registerTypeHierarchyAdapter(Vec3d.class, new CodecSerializer<>(Vec3d.CODEC))
             .registerTypeHierarchyAdapter(Vec2f.class, new CodecSerializer<>(Codec.list(Codec.DOUBLE).xmap(x -> new Vec2f(x.get(0).floatValue(), x.get(1).floatValue()), x -> List.of((double) x.x, (double) x.y))))
-            .registerTypeHierarchyAdapter(EntityDimensions.class, new CodecSerializer<>(Codec.list(Codec.DOUBLE).xmap(x -> EntityDimensions.fixed(x.get(0).floatValue(), x.get(1).floatValue()), x -> List.of((double) x.width, (double) x.height))))
+            .registerTypeHierarchyAdapter(EntityDimensions.class, new CodecSerializer<>(Codec.list(Codec.DOUBLE).xmap(x -> EntityDimensions.fixed(x.get(0).floatValue(), x.get(1).floatValue()), x -> List.of((double) x.width(), (double) x.height()))))
             .registerTypeHierarchyAdapter(BlockState.class, new CodecSerializer<>(BlockState.CODEC))
             .registerTypeHierarchyAdapter(AffineTransformation.class, new CodecSerializer<>(AffineTransformation.CODEC))
             .registerTypeHierarchyAdapter(DisplayEntity.BillboardMode.class, new CodecSerializer<>(DisplayEntity.BillboardMode.CODEC))
@@ -73,9 +69,9 @@ public class BaseGson {
 
         @Override
         public JsonElement serialize(ItemStack stack, Type type, JsonSerializationContext jsonSerializationContext) {
-            if (stack.getCount() == 1 && !stack.hasNbt()) {
-                return new JsonPrimitive(Registries.ITEM.getId(stack.getItem()).toString());
-            }
+            //if (stack.getCount() == 1 && !stack.hasNbt()) {
+            //    return new JsonPrimitive(Registries.ITEM.getId(stack.getItem()).toString());
+            //}
 
             return ItemStack.CODEC.encodeStart(RegistryOps.of(JsonOps.INSTANCE, GLOBAL_REGISTRIES), stack).result().orElse(null);
         }
@@ -115,7 +111,7 @@ public class BaseGson {
         @Override
         public T deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             try {
-                return this.codec.decode(JsonOps.INSTANCE, json).getOrThrow(false, (x) -> {}).getFirst();
+                return this.codec.decode(JsonOps.INSTANCE, json).getOrThrow().getFirst();
             } catch (Throwable e) {
                 return null;
             }
@@ -124,7 +120,7 @@ public class BaseGson {
         @Override
         public JsonElement serialize(T src, Type typeOfSrc, JsonSerializationContext context) {
             try {
-                return src != null ? this.codec.encodeStart(JsonOps.INSTANCE, src).getOrThrow(false, (x) -> {}) : JsonNull.INSTANCE;
+                return src != null ? this.codec.encodeStart(JsonOps.INSTANCE, src).getOrThrow() : JsonNull.INSTANCE;
             } catch (Throwable e) {
                 return JsonNull.INSTANCE;
             }

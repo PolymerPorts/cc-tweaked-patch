@@ -2,20 +2,19 @@ package eu.pb4.cctpatch.impl;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.shared.turtle.recipes.TurtleOverlayRecipe;
+import dan200.computercraft.shared.ModRegistry;
+import dan200.computercraft.shared.recipe.TransformShapelessRecipe;
 import eu.pb4.cctpatch.impl.config.PatchConfig;
 import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
-import eu.pb4.cctpatch.mixin.TurtleOverlayRecipeAccessor;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.ColorHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +41,9 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 		ServerLifecycleEvents.SERVER_STARTING.register((server1 -> {
 			server = server1;
 			for (var x : server1.getRecipeManager().values()) {
-				if (x.value() instanceof TurtleOverlayRecipe turtleOverlayRecipe) {
-					TurtleModel.registerOverlay(((TurtleOverlayRecipeAccessor) turtleOverlayRecipe).getOverlay());
+				var res = x.value().getResult(server1.getRegistryManager());
+				if (res.contains(ModRegistry.DataComponents.OVERLAY.get())) {
+					TurtleModel.registerOverlay(res.get(ModRegistry.DataComponents.OVERLAY.get()));
 				}
 			}
 		}));
@@ -51,8 +51,9 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((a, b, c) -> {
 			PatchConfig.loadOrCreateConfig();
 			for (var x : a.getRecipeManager().values()) {
-				if (x.value() instanceof TurtleOverlayRecipe turtleOverlayRecipe) {
-					TurtleModel.registerOverlay(((TurtleOverlayRecipeAccessor) turtleOverlayRecipe).getOverlay());
+				var res = x.value().getResult(a.getRegistryManager());
+				if (res.contains(ModRegistry.DataComponents.OVERLAY.get())) {
+					TurtleModel.registerOverlay(res.get(ModRegistry.DataComponents.OVERLAY.get()));
 				}
 			}
 		}));

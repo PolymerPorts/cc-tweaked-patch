@@ -5,6 +5,7 @@ import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleAnimation;
 import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.shared.ComputerCraft;
+import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlockEntity;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
@@ -27,6 +28,8 @@ import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.FireworkExplosionComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -137,7 +140,10 @@ public class TurtleModel extends BlockModel {
     private ItemStack getUpgradeModel(ITurtleUpgrade upgrade, TurtleBrain brain, TurtleSide turtleSide) {
         if (upgrade instanceof TurtleModemAccessor modem) {
             var type = modem.isAdvanced() ? ADVANCED_MODEM_MODEL : NORMAL_MODEM_MODEL;
-            return (brain.getUpgradeNBTData(turtleSide).getBoolean("active") ? type.onModel : type.offModel).get(turtleSide);
+            var x = brain.getUpgradeData(turtleSide).get(ModRegistry.DataComponents.ON.get());
+            if (x != null && x.isPresent() && x.get())
+                return type.onModel.get(turtleSide);
+            return type.offModel.get(turtleSide);
         } else if (upgrade instanceof TurtleSpeaker) {
             return SPEAKER_MODEL.get(turtleSide);
         } else if (upgrade instanceof TurtleCraftingTable) {
@@ -164,10 +170,7 @@ public class TurtleModel extends BlockModel {
                 this.base.setItem(ItemDisplayElementUtil.getModel(this.blockState().getBlock().asItem()));
             } else {
                 var model = COLORED_TURTLE_MODEL.copy();
-                var ex = new NbtCompound();
-                var c = new NbtIntArray(new int[] { this.color });
-                ex.put("Colors", c);
-                model.getOrCreateNbt().put("Explosion", ex);
+                model.set(DataComponentTypes.FIREWORK_EXPLOSION, new FireworkExplosionComponent(FireworkExplosionComponent.Type.BURST, IntList.of(this.color), IntList.of(), false, false));
                 this.base.setItem(model);
             }
         }

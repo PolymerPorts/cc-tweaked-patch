@@ -36,7 +36,8 @@ import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.passive.HorseEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.map.MapIcon;
+import net.minecraft.item.map.MapDecorationType;
+import net.minecraft.item.map.MapDecorationTypes;
 import net.minecraft.nbt.NbtHelper;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.nbt.NbtOps;
@@ -115,7 +116,7 @@ public class MapGui extends HotbarGui {
 
         this.cursorX = this.canvas.getWidth();
         this.cursorY = this.canvas.getHeight(); // MapDecoration.Type.TARGET_POINT
-        this.cursor = true ? this.canvas.createIcon(MapIcon.Type.TARGET_POINT, true, this.cursorX, this.cursorY, (byte) 14, null) : null;
+        this.cursor = true ? this.canvas.createIcon(MapDecorationTypes.TARGET_POINT, true, this.cursorX, this.cursorY, (byte) 14, null) : null;
 
         if (false) {
             this.cursor2 = new ItemDisplayElement(Items.GLASS_PANE);

@@ -208,7 +208,7 @@ public class BlockStateModelManager {
 
         @Override
         public ModelData getModel(Random random) {
-            return Weighting.getAt(this.data, Math.abs((int) random.nextLong()) % this.weightedSum).orElse(this.data.get(0)).getData();
+            return Weighting.getAt(this.data, Math.abs((int) random.nextLong()) % this.weightedSum).orElse(this.data.get(0)).data();
         }
     }
     public record ModelData(ItemStack stack, Quaternionfc quaternionfc, int weight) {}

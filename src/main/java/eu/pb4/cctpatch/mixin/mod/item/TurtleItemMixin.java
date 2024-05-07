@@ -1,22 +1,23 @@
 package eu.pb4.cctpatch.mixin.mod.item;
 
-import dan200.computercraft.shared.common.IColouredItem;
-import dan200.computercraft.shared.computer.core.ComputerState;
-import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import dan200.computercraft.shared.turtle.items.TurtleItem;
-import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
 import eu.pb4.factorytools.api.item.RegistryCallbackItem;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
-import net.minecraft.client.item.TooltipContext;
+import it.unimi.dsi.fastutil.ints.IntList;
+import net.minecraft.client.item.TooltipType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.component.type.FireworkExplosionComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIntArray;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
@@ -42,7 +43,7 @@ public class TurtleItemMixin implements RegistryCallbackItem, PolymerItem {
 
     @Unique
     private PolymerModelData getModelData(ItemStack itemStack) {
-        if (IColouredItem.getColourBasic(itemStack) != -1) {
+        if (DyedColorComponent.getColor(itemStack, -1) != -1) {
             return dyedModel;
         }
 
@@ -50,14 +51,11 @@ public class TurtleItemMixin implements RegistryCallbackItem, PolymerItem {
     }
 
     @Override
-    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipContext context, @Nullable ServerPlayerEntity player) {
-        var stack = PolymerItemUtils.createItemStack(itemStack, context, player);
-        var color = IColouredItem.getColourBasic(itemStack);
+    public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
+        var stack = PolymerItemUtils.createItemStack(itemStack, context, lookup, player);
+        var color = DyedColorComponent.getColor(itemStack, -1);
         if (color != -1) {
-            var ex = new NbtCompound();
-            var c = new NbtIntArray(new int[]{ color });
-            ex.put("Colors", c);
-            stack.getOrCreateNbt().put("Explosion", ex);
+            stack.set(DataComponentTypes.FIREWORK_EXPLOSION, new FireworkExplosionComponent(FireworkExplosionComponent.Type.BURST, IntList.of(color), IntList.of(), false, false));
         }
         return stack;
     }

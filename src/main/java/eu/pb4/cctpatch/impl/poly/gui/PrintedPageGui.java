@@ -2,6 +2,8 @@ package eu.pb4.cctpatch.impl.poly.gui;
 
 import dan200.computercraft.core.terminal.Terminal;
 import dan200.computercraft.core.util.Colour;
+import dan200.computercraft.shared.ModRegistry;
+import dan200.computercraft.shared.media.items.PrintoutData;
 import dan200.computercraft.shared.media.items.PrintoutItem;
 import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.render.CenteredTextView;
@@ -13,6 +15,7 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.CanvasImage;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
+import net.minecraft.component.DataComponentType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
@@ -24,15 +27,12 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 
 public class PrintedPageGui extends MapGui {
-    private final int pageCount;
-    private final String title;
-    private final String[] lines;
-    private final String[] colors;
     private final CanvasImage[] pages;
 
     private final ImageView displayedPage;
     private final ImageView leftSide;
     private final ImageView rightSide;
+    private final PrintoutData data;
 
     private int currentPage = 0;
     @Nullable
@@ -41,38 +41,35 @@ public class PrintedPageGui extends MapGui {
     public PrintedPageGui(ServerPlayerEntity player, ItemStack stack) {
         super(player);
 
-        this.title = PrintoutItem.getTitle(stack);
-        this.lines = PrintoutItem.getText(stack);
-        this.colors = PrintoutItem.getColours(stack);
-        this.pageCount = PrintoutItem.getPageCount(stack);
-
+        this.data = stack.getOrDefault(ModRegistry.DataComponents.PRINTOUT.get(), PrintoutData.EMPTY);
 
         var list = new ArrayList<CanvasImage>();
         var type = ((PrintoutItem) stack.getItem()).getType();
 
         CanvasImage image = null;
 
-        var pageWidth = Fonts.FONT_WIDTH * PrintoutItem.LINE_MAX_LENGTH;
-        var pageHeight = Fonts.FONT_HEIGHT * PrintoutItem.LINES_PER_PAGE;
+        var pageWidth = Fonts.FONT_WIDTH * PrintoutData.LINE_LENGTH;
+        var pageHeight = Fonts.FONT_HEIGHT * PrintoutData.LINES_PER_PAGE;
 
 
 
-        for (int y = 0; y < this.lines.length; y++) {
-            var lY = y % PrintoutItem.LINES_PER_PAGE;
+        for (int y = 0; y < this.data.lines().size(); y++) {
+            var lY = y % PrintoutData.LINES_PER_PAGE;
             if (lY == 0) {
                 if (image != null) {
                     list.add(image);
                 }
                 image = new CanvasImage(pageWidth, pageHeight);
             }
-            var line = this.lines[y];
-            var color = this.colors[y];
-            var textLength = Math.min(PrintoutItem.LINES_PER_PAGE, line.length());
+            var line = this.data.lines().get(y);
+            var text = line.text();
+            var color = line.foreground();
+            var textLength = Math.min(PrintoutData.LINES_PER_PAGE, text.length());
             for (int x = 0; x < textLength; x++) {
-                var character = line.charAt(x);
+                var character = text.charAt(x);
                 int charWidth = Fonts.TERMINAL_FONT.getGlyphWidth(character, 8, 0);
 
-                Fonts.TERMINAL_FONT.drawGlyph(image, line.charAt(x), x * Fonts.FONT_WIDTH + (Fonts.FONT_WIDTH - charWidth) / 2, lY * Fonts.FONT_HEIGHT, 8, 0,
+                Fonts.TERMINAL_FONT.drawGlyph(image, text.charAt(x), x * Fonts.FONT_WIDTH + (Fonts.FONT_WIDTH - charWidth) / 2, lY * Fonts.FONT_HEIGHT, 8, 0,
                         CanvasUtils.findClosestColor(Colour.fromInt(15 - Terminal.getColour(color.charAt(x), Colour.BLACK)).getHex()));
             }
         }
@@ -86,9 +83,9 @@ public class PrintedPageGui extends MapGui {
         int centerX = canvas.getWidth() / 2;
         int centerY = canvas.getHeight() / 2 - 24;
 
-        if (this.pageCount > 1) {
+        if (this.data.pages() > 1) {
             var ay = centerY + pageHeight / 2 + 32;
-            this.pageText = new CenteredTextView(0, ay, this.renderer.canvas().getWidth(),"AAAAAA", DefaultFonts.VANILLA, 16, CanvasColor.BLACK_HIGH);
+            this.pageText = new CenteredTextView(0, ay, this.renderer.canvas().getWidth(), (this.currentPage + 1) + "/" + (this.data.pages()), DefaultFonts.VANILLA, 16, CanvasColor.BLACK_HIGH);
             this.pageText.zIndex = 100;
             this.renderer.add(this.pageText);
 
@@ -172,7 +169,7 @@ public class PrintedPageGui extends MapGui {
     private void nextPage() {
         var page = this.currentPage + 1;
 
-        if (page >= this.pageCount) {
+        if (page >= this.data.pages()) {
             page = 0;
         }
 
@@ -183,7 +180,7 @@ public class PrintedPageGui extends MapGui {
         var page = this.currentPage - 1;
 
         if (page < 0) {
-            page = this.pageCount - 1;
+            page = this.data.pages() - 1;
         }
 
         this.setPage(page);
@@ -194,7 +191,7 @@ public class PrintedPageGui extends MapGui {
         this.currentPage = page;
 
         if (this.pageText != null) {
-            this.pageText.text = (page + 1) + "/" + this.pageCount;
+            this.pageText.text = (page + 1) + "/" + this.data.pages();
         }
     }
 
