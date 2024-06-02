@@ -1,29 +1,21 @@
 package eu.pb4.cctpatch.impl.poly.model;
 
 import dan200.computercraft.api.ComputerCraftAPI;
+import dan200.computercraft.api.turtle.AbstractTurtleUpgrade;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
-import dan200.computercraft.api.turtle.TurtleAnimation;
 import dan200.computercraft.api.turtle.TurtleSide;
-import dan200.computercraft.shared.ComputerCraft;
 import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
-import dan200.computercraft.shared.turtle.blocks.TurtleBlockEntity;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
-import dan200.computercraft.shared.turtle.upgrades.TurtleModem;
 import dan200.computercraft.shared.turtle.upgrades.TurtleSpeaker;
 import dan200.computercraft.shared.turtle.upgrades.TurtleTool;
 import dan200.computercraft.shared.util.Holiday;
-import eu.pb4.cctpatch.impl.poly.model.generic.BlockStateModelManager;
 import eu.pb4.cctpatch.mixin.TurtleModemAccessor;
-import eu.pb4.cctpatch.mixin.TurtleToolAccessor;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
-import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
-import eu.pb4.polymer.virtualentity.api.attachment.BlockBoundAttachment;
-import eu.pb4.polymer.virtualentity.api.attachment.ChunkAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
@@ -32,20 +24,14 @@ import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.FireworkExplosionComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
-import net.minecraft.registry.tag.ItemTags;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
-import org.joml.Vector3f;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -148,11 +134,9 @@ public class TurtleModel extends BlockModel {
             return SPEAKER_MODEL.get(turtleSide);
         } else if (upgrade instanceof TurtleCraftingTable) {
             return CRAFTING_MODEL.get(turtleSide);
-        } else if (upgrade instanceof TurtleToolAccessor tool) {
-            return tool.getItem();
         }
 
-        return ItemStack.EMPTY;
+        return upgrade.getCraftingItem();
     }
 
     public void update(TurtleBrain turtleBrain) {
