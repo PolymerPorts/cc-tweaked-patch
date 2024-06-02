@@ -124,6 +124,9 @@ public class TurtleModel extends BlockModel {
     }
 
     private ItemStack getUpgradeModel(ITurtleUpgrade upgrade, TurtleBrain brain, TurtleSide turtleSide) {
+        if(upgrade == null){
+            return ItemStack.EMPTY;
+        }
         if (upgrade instanceof TurtleModemAccessor modem) {
             var type = modem.isAdvanced() ? ADVANCED_MODEM_MODEL : NORMAL_MODEM_MODEL;
             var x = brain.getUpgradeData(turtleSide).get(ModRegistry.DataComponents.ON.get());
