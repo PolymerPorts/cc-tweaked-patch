@@ -5,7 +5,7 @@
   "mixins": [
     "ServerPlayNetworkHandlerAccessor",
     "TurtleModemAccessor",
-    "TurtleToolAccessor",
+    "TurtleToolInvoker",
     "mod.PlatformHelperImplRegistryEntryImplMixin",
     "mod.ServerNetworkingMixin",
     "mod.block.GenericBlockModelMixin",

@@ -4,7 +4,7 @@ plugins {
 	id "com.modrinth.minotaur" version "2.+"
 }
 
-version = project.mod_version
+version = "${project.cc_version}+${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -46,7 +46,7 @@ dependencies {
 
 	// 1.109.6
 	modImplementation "maven.modrinth:cc-tweaked:7U8gSlIr"
-	modImplementation "cc.tweaked:cc-tweaked-1.20.5-fabric:1.110.3"
+	modImplementation "cc.tweaked:cc-tweaked-${project.minecraft_version}-fabric:${project.cc_version}"
 
 	modImplementation include('eu.pb4:sgui:1.5.1+1.20.5')
 	modImplementation include('eu.pb4:player-data-api:0.5.0+1.20.5')
