@@ -31,11 +31,11 @@ public record PocketComputerModel(PolymerModelData defaultModel,
         var blinkingModel = PolymerResourcePackUtils.requestModel(Items.FILLED_MAP, identifier.withPrefixedPath("item/").withSuffixedPath("_blinking"));
         var onModelNoScreen = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(), identifier.withPrefixedPath("item/").withSuffixedPath("_on"));
         var blinkingModelNoScreen = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(), identifier.withPrefixedPath("item/").withSuffixedPath("_blinking"));
-        var dyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour"));
-        var onDyedModel = PolymerResourcePackUtils.requestModel(Items.FILLED_MAP, new Identifier("computercraft:item/pocket_computer_colour_on"));
-        var onDyedModelNoScreen = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour_on"));
-        var blinkingDyedModel = PolymerResourcePackUtils.requestModel(Items.FILLED_MAP, new Identifier("computercraft:item/pocket_computer_colour_blinking"));
-        var blinkingDyedModelNoScreen = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:item/pocket_computer_colour_blinking"));
+        var dyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, Identifier.of("computercraft:item/pocket_computer_colour"));
+        var onDyedModel = PolymerResourcePackUtils.requestModel(Items.FILLED_MAP, Identifier.of("computercraft:item/pocket_computer_colour_on"));
+        var onDyedModelNoScreen = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, Identifier.of("computercraft:item/pocket_computer_colour_on"));
+        var blinkingDyedModel = PolymerResourcePackUtils.requestModel(Items.FILLED_MAP, Identifier.of("computercraft:item/pocket_computer_colour_blinking"));
+        var blinkingDyedModelNoScreen = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, Identifier.of("computercraft:item/pocket_computer_colour_blinking"));
         return new PocketComputerModel(defaultModel, onModel, onModelNoScreen, blinkingModel, blinkingModelNoScreen, dyedModel, onDyedModel, onDyedModelNoScreen, blinkingDyedModel, blinkingDyedModelNoScreen);
     }
 

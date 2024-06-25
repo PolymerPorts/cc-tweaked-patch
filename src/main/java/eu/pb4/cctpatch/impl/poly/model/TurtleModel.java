@@ -39,12 +39,12 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public class TurtleModel extends BlockModel {
-    public static final ModemModel NORMAL_MODEM_MODEL = ModemModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_modem_normal"));
-    public static final ModemModel ADVANCED_MODEM_MODEL = ModemModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_modem_advanced"));
-    public static final SidedModel SPEAKER_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_speaker"));
-    public static final SidedModel CRAFTING_MODEL = SidedModel.of(new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_crafting_table"));
-    public static final ItemStack COLORED_TURTLE_MODEL = BaseItemProvider.requestModel(Items.FIREWORK_STAR, new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
-    public static final Identifier ELF_OVERLAY_MODEL = new Identifier(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
+    public static final ModemModel NORMAL_MODEM_MODEL = ModemModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_modem_normal"));
+    public static final ModemModel ADVANCED_MODEM_MODEL = ModemModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_modem_advanced"));
+    public static final SidedModel SPEAKER_MODEL = SidedModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_speaker"));
+    public static final SidedModel CRAFTING_MODEL = SidedModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_crafting_table"));
+    public static final ItemStack COLORED_TURTLE_MODEL = BaseItemProvider.requestModel(Items.FIREWORK_STAR, Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
+    public static final Identifier ELF_OVERLAY_MODEL = Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
 
     private static final Map<Identifier, ItemStack> OVERLAYS = new HashMap<>();
     private final ItemDisplayElement base;

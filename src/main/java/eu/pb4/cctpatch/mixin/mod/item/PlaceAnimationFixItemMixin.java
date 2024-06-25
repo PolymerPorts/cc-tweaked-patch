@@ -1,6 +1,7 @@
 package eu.pb4.cctpatch.mixin.mod.item;
 
 import dan200.computercraft.shared.computer.items.AbstractComputerItem;
+import dan200.computercraft.shared.peripheral.modem.wired.CableBlockItem;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemUsageContext;
@@ -12,9 +13,9 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(AbstractComputerItem.class)
-public abstract class AbstractComputerItemMixin extends BlockItem {
-    public AbstractComputerItemMixin(Block block, Settings settings) {
+@Mixin({AbstractComputerItem.class, CableBlockItem.class})
+public abstract class PlaceAnimationFixItemMixin extends BlockItem {
+    public PlaceAnimationFixItemMixin(Block block, Settings settings) {
         super(block, settings);
     }
 

@@ -12,7 +12,6 @@ import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.client.item.TooltipType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.FireworkExplosionComponent;
@@ -21,6 +20,7 @@ import net.minecraft.component.type.MapIdComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIntArray;
 import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
@@ -51,7 +51,7 @@ public abstract class PocketComputerItemMixin implements RegistryCallbackItem, P
     }
     @Override
     public ItemStack getPolymerItemStack(ItemStack itemStack, TooltipType context, RegistryWrapper.WrapperLookup lookup, @Nullable ServerPlayerEntity player) {
-        var stack = PolymerItemUtils.createItemStack(itemStack, context, player);
+        var stack = PolymerItemUtils.createItemStack(itemStack, context, lookup, player);
         var data = this.model.getModelData(itemStack, isPlayerboundPacket());
         var color = DyedColorComponent.getColor(stack, Colour.WHITE.getARGB());
         if (data.item() == Items.FIREWORK_STAR) {

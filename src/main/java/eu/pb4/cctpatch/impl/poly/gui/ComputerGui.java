@@ -325,7 +325,7 @@ public final class ComputerGui extends MapGui {
     }
 
     public void render() {
-        if (this.computer.getComputer().isOn()) {
+        if (this.computer.isOn()) {
             this.closeButton.texture = GuiTextures.SHUTDOWN_ACTIVE;
         } else {
             this.closeButton.texture = GuiTextures.SHUTDOWN_ICON;

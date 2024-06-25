@@ -38,7 +38,6 @@ public class BaseGson {
 
             .registerTypeHierarchyAdapter(Item.class, new RegistrySerializer<>(Registries.ITEM))
             .registerTypeHierarchyAdapter(Block.class, new RegistrySerializer<>(Registries.BLOCK))
-            .registerTypeHierarchyAdapter(Enchantment.class, new RegistrySerializer<>(Registries.ENCHANTMENT))
             .registerTypeHierarchyAdapter(SoundEvent.class, new RegistrySerializer<>(Registries.SOUND_EVENT))
             .registerTypeHierarchyAdapter(StatusEffect.class, new RegistrySerializer<>(Registries.STATUS_EFFECT))
             .registerTypeHierarchyAdapter(EntityType.class, new RegistrySerializer<>(Registries.ENTITY_TYPE))

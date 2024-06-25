@@ -44,18 +44,16 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	// 1.109.6
-	//modImplementation "maven.modrinth:cc-tweaked:7U8gSlIr"
-	modImplementation "cc.tweaked:cc-tweaked-1.20.6-fabric:1.111.0"
+	modImplementation "cc.tweaked:cc-tweaked-1.21-fabric:1.111.0"
 
-	modImplementation include('eu.pb4:sgui:1.5.1+1.20.5')
-	modImplementation include('eu.pb4:player-data-api:0.5.0+1.20.5')
-	modImplementation include('eu.pb4:map-canvas-api:0.3.0+1.20.6')
-	modImplementation include('eu.pb4:factorytools:0.2.2+1.20.6')
-	modImplementation 'eu.pb4:polymer-core:0.8.2+1.20.6'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.8.2+1.20.6'
-	modImplementation 'eu.pb4:polymer-autohost:0.8.2+1.20.6'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.8.2+1.20.6'
+	modImplementation include('eu.pb4:sgui:1.6.0+1.21')
+	modImplementation include('eu.pb4:player-data-api:0.6.0+1.21')
+	modImplementation include('eu.pb4:map-canvas-api:0.4.1+1.21')
+	modImplementation include('eu.pb4:factorytools:0.3.1+1.21')
+	modImplementation 'eu.pb4:polymer-core:0.9.2+1.21'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.9.2+1.21'
+	modImplementation 'eu.pb4:polymer-autohost:0.9.2+1.21'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.9.2+1.21'
 
 
 	modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {

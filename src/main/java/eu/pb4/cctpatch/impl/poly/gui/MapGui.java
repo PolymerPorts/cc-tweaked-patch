@@ -17,6 +17,7 @@ import eu.pb4.playerdata.api.PlayerDataApi;
 import eu.pb4.polymer.core.api.utils.PolymerUtils;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
+import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.ManualAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
 import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
@@ -45,7 +46,9 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
+import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -57,12 +60,14 @@ import net.minecraft.world.GameMode;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 public class MapGui extends HotbarGui {
 
-    private static final Identifier DISTANCE_STORAGE_ID = new Identifier("cct-patch", "view_shift");
+    private static final Identifier DISTANCE_STORAGE_ID = Identifier.of("cct-patch", "view_shift");
     private static final Vec3d DEFAULT_SHIFT = new Vec3d(0, 0, 1);
     private static final Packet<?> COMMAND_PACKET;
     public final CombinedPlayerCanvas canvas;
@@ -76,6 +81,7 @@ public class MapGui extends HotbarGui {
     public final DisplayElement cameraPoint;
 
     public final ElementHolder holder = new ElementHolder();
+    private final BlockPos zeroPos;
 
     public float xRot;
     public float yRot;
@@ -90,14 +96,14 @@ public class MapGui extends HotbarGui {
         this.pos = pos;
         var dir = Direction.NORTH;
         this.canvas = DrawableCanvas.create(5, 3);
-        var zeroPos =  pos.offset(dir).offset(dir.rotateYClockwise(), 2).up();
+        this.zeroPos =  pos.offset(dir).offset(dir.rotateYClockwise(), 2).up();
         this.virtualDisplay = VirtualDisplay.of(this.canvas, zeroPos, dir, 0, true);
         this.renderer = CanvasRenderer.of(new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight()));
         this.renderer.add(new ImageButton(560, 32, GuiTextures.CLOSE_ICON, (a, b, c) -> this.close()));
 
         this.canvas.addPlayer(player);
         this.virtualDisplay.addPlayer(player);
-        this.holder.setAttachment(new ManualAttachment(this.holder, player.getServerWorld(), () -> Vec3d.of(zeroPos).add(1, 1,1 - 1 / 32f)));
+        this.holder.setAttachment(new SelfHolder());
         this.holder.startWatching(player);
 
         this.cameraPoint = new BlockDisplayElement();
@@ -312,5 +318,34 @@ public class MapGui extends HotbarGui {
         }
 
         return false;
+    }
+
+    private class SelfHolder implements HolderAttachment {
+
+        @Override
+        public ElementHolder holder() {
+            return MapGui.this.holder;
+        }
+
+        @Override
+        public void destroy() {
+
+        }
+
+        @Override
+        public Vec3d getPos() {
+            return Vec3d.of(zeroPos).add(1, 1,1 - 1 / 32f);
+        }
+
+        @Override
+        public ServerWorld getWorld() {
+            return MapGui.this.getPlayer().getServerWorld();
+        }
+
+        @Override
+        public void updateCurrentlyTracking(Collection<ServerPlayNetworkHandler> currentlyTracking) {}
+
+        @Override
+        public void updateTracking(ServerPlayNetworkHandler tracking) {}
     }
 }

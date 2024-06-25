@@ -8,7 +8,7 @@ import eu.pb4.polymer.core.api.item.PolymerItemUtils;
 import eu.pb4.polymer.resourcepack.api.PolymerModelData;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.client.item.TooltipType;
+import net.minecraft.item.tooltip.TooltipType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.DyedColorComponent;
 import net.minecraft.component.type.FireworkExplosionComponent;
@@ -63,7 +63,7 @@ public class TurtleItemMixin implements RegistryCallbackItem, PolymerItem {
     @Override
     public void onRegistered(Identifier selfId) {
         this.defaultModel = PolymerResourcePackUtils.requestModel(BaseItemProvider.requestItem(),
-                new Identifier(selfId.getNamespace(), "item/" + selfId.getPath()));
-        this.dyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, new Identifier("computercraft:block/turtle_colour"));
+                Identifier.of(selfId.getNamespace(), "item/" + selfId.getPath()));
+        this.dyedModel = PolymerResourcePackUtils.requestModel(Items.FIREWORK_STAR, Identifier.of("computercraft:block/turtle_colour"));
     }
 }

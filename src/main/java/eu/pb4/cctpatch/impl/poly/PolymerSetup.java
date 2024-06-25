@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 public class PolymerSetup {
-    public static final Identifier GUI_FONT = new Identifier("cct-patch", "gui");
+    public static final Identifier GUI_FONT = Identifier.of("cct-patch", "gui");
 
     public static void setup() {
     }

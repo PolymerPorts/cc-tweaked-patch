@@ -13,7 +13,7 @@ public record FakeRegistrationHelper<T>(BiConsumer<Identifier, T> consumer) impl
 
     @Override
     public <U extends T> RegistryEntry<U> register(String s, Supplier<U> supplier) {
-        var x = new RegistryEntry<>(new Identifier("computercraft", s), supplier.get());
+        var x = new RegistryEntry<>(Identifier.of("computercraft", s), supplier.get());
         consumer.accept(x.id, x.obj);
         return x;
     }

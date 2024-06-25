@@ -19,7 +19,7 @@
     "mod.ext.ServerInputStateMixin",
     "mod.ext.ServerMonitorMixin",
     "mod.ext.TerminalMixin",
-    "mod.item.AbstractComputerItemMixin",
+    "mod.item.PlaceAnimationFixItemMixin",
     "mod.item.GenericItemMixin",
     "mod.item.ModRegistryCreativeTabsMixin",
     "mod.item.ModRegistryDataComponentsMixin",
