@@ -49,6 +49,7 @@ public class TurtleModel extends BlockModel {
     private static final Map<Identifier, ItemStack> OVERLAYS = new HashMap<>();
     private final ItemDisplayElement base;
     private final ItemDisplayElement overlay;
+    private final ItemDisplayElement overlay2;
     private final ItemDisplayElement leftAttachment;
     private final ItemDisplayElement rightAttachment;
 
@@ -58,6 +59,7 @@ public class TurtleModel extends BlockModel {
     private Vec3d lastPos;
     private int color = -1;
     private Identifier overlayId;
+    private Identifier overlayId2;
 
     public static void registerOverlay(Identifier identifier) {
         if (!OVERLAYS.containsKey(identifier)) {
@@ -76,6 +78,10 @@ public class TurtleModel extends BlockModel {
         this.overlay.setTeleportDuration(1);
         this.overlay.setModelTransformation(ModelTransformationMode.NONE);
         this.overlay.setYaw(this.baseYaw);
+        this.overlay2 = ItemDisplayElementUtil.createSimple();
+        this.overlay2.setTeleportDuration(1);
+        this.overlay2.setModelTransformation(ModelTransformationMode.NONE);
+        this.overlay2.setYaw(this.baseYaw);
         this.leftAttachment = ItemDisplayElementUtil.createSimple();
         this.leftAttachment.setInterpolationDuration(1);
         this.leftAttachment.setModelTransformation(ModelTransformationMode.NONE);
@@ -86,6 +92,7 @@ public class TurtleModel extends BlockModel {
         this.rightAttachment.setYaw(this.baseYaw);
         this.addElement(this.base);
         this.addElement(this.overlay);
+        this.addElement(this.overlay2);
         this.addElement(this.leftAttachment);
         this.addElement(this.rightAttachment);
     }
@@ -109,6 +116,7 @@ public class TurtleModel extends BlockModel {
         this.baseYaw = yaw;
         this.base.setYaw(this.baseYaw);
         this.overlay.setYaw(this.baseYaw);
+        this.overlay2.setYaw(this.baseYaw);
         this.leftAttachment.setYaw(this.baseYaw);
         this.rightAttachment.setYaw(this.baseYaw);
     }
@@ -164,14 +172,19 @@ public class TurtleModel extends BlockModel {
 
         {
             var overlay = turtleBrain.getOverlay();
-
-            if (overlay == null && Holiday.getCurrent() == Holiday.CHRISTMAS) {
-                overlay = ELF_OVERLAY_MODEL;
+            Identifier overlay2 = null;
+            if ((overlay == null || overlay.value().showElfOverlay()) && Holiday.getCurrent() == Holiday.CHRISTMAS) {
+                overlay2 = ELF_OVERLAY_MODEL;
             }
 
-            if (!Objects.equals(this.overlayId, overlay)) {
-                this.overlayId = overlay;
+            if ((this.overlayId != null && overlay == null) || (overlay != null && !overlay.value().model().equals(this.overlayId))) {
+                this.overlayId = overlay != null ? overlay.value().model() : null;
                 this.overlay.setItem(OVERLAYS.getOrDefault(this.overlayId, ItemStack.EMPTY));
+            }
+
+            if (!Objects.equals(overlay2, this.overlayId2)) {
+                this.overlayId2 = overlay2;
+                this.overlay2.setItem(OVERLAYS.getOrDefault(this.overlayId2, ItemStack.EMPTY));
             }
         }
 

@@ -2,8 +2,7 @@ package eu.pb4.cctpatch.impl;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import dan200.computercraft.shared.ModRegistry;
-import dan200.computercraft.shared.recipe.TransformShapelessRecipe;
+import dan200.computercraft.shared.turtle.TurtleOverlay;
 import eu.pb4.cctpatch.impl.config.PatchConfig;
 import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.PolymerSetup;
@@ -40,22 +39,13 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 		PolymerResourcePackUtils.addModAssets(MOD_ID);
 		ServerLifecycleEvents.SERVER_STARTING.register((server1 -> {
 			server = server1;
-			for (var x : server1.getRecipeManager().values()) {
-				var res = x.value().getResult(server1.getRegistryManager());
-				if (res.contains(ModRegistry.DataComponents.OVERLAY.get())) {
-					TurtleModel.registerOverlay(res.get(ModRegistry.DataComponents.OVERLAY.get()));
-				}
+			for (var x : server1.getRegistryManager().get(TurtleOverlay.REGISTRY)) {
+				TurtleModel.registerOverlay(x.model());
 			}
 		}));
 		ServerLifecycleEvents.SERVER_STOPPED.register((server1 -> server = null));
 		ServerLifecycleEvents.END_DATA_PACK_RELOAD.register(((a, b, c) -> {
 			PatchConfig.loadOrCreateConfig();
-			for (var x : a.getRecipeManager().values()) {
-				var res = x.value().getResult(a.getRegistryManager());
-				if (res.contains(ModRegistry.DataComponents.OVERLAY.get())) {
-					TurtleModel.registerOverlay(res.get(ModRegistry.DataComponents.OVERLAY.get()));
-				}
-			}
 		}));
 
 		TurtleModel.registerOverlay(TurtleModel.ELF_OVERLAY_MODEL);

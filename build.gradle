@@ -21,7 +21,7 @@ repositories {
 	maven { url 'https://maven.nucleoid.xyz' }
 
 	maven {
-		url "https://squiddev.cc/maven/"
+		url "https://maven.squiddev.cc"
 		content {
 			includeGroup("cc.tweaked")
 		}
@@ -44,16 +44,16 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "cc.tweaked:cc-tweaked-1.21-fabric:1.111.0"
+	modImplementation "cc.tweaked:cc-tweaked-1.21-fabric:1.111.1"
 
 	modImplementation include('eu.pb4:sgui:1.6.0+1.21')
 	modImplementation include('eu.pb4:player-data-api:0.6.0+1.21')
 	modImplementation include('eu.pb4:map-canvas-api:0.4.1+1.21')
 	modImplementation include('eu.pb4:factorytools:0.3.1+1.21')
-	modImplementation 'eu.pb4:polymer-core:0.9.2+1.21'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.9.2+1.21'
-	modImplementation 'eu.pb4:polymer-autohost:0.9.2+1.21'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.9.2+1.21'
+	modImplementation 'eu.pb4:polymer-core:0.9.4+1.21'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.9.4+1.21'
+	modImplementation 'eu.pb4:polymer-autohost:0.9.4+1.21'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.9.4+1.21'
 
 
 	modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {
