@@ -26,8 +26,8 @@
       "cc-tweaked-polymer-patch.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.0",
-		"computercraft": ">=1.101.0",
+		"fabricloader": ">=0.15.10",
+		"computercraft": ">=1.113.0",
 		"minecraft": ">=1.21-",
 		"java": ">=21",
 		"fabric-api": "*"

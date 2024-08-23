@@ -1,15 +1,9 @@
 package eu.pb4.cctpatch.mixin.mod.item;
 
-import dan200.computercraft.api.pocket.IPocketUpgrade;
 import dan200.computercraft.shared.pocket.core.PocketBrain;
-import dan200.computercraft.shared.pocket.core.PocketHolder;
 import dan200.computercraft.shared.pocket.core.PocketServerComputer;
 import eu.pb4.cctpatch.impl.poly.PocketComputerRenderer;
 import eu.pb4.cctpatch.impl.poly.ext.ServerComputerExt;
-import eu.pb4.cctpatch.mixin.PocketBrainAccessor;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -26,11 +20,11 @@ public abstract class PocketServerComputerMixin implements ServerComputerExt {
 
     @Inject(method = "onRemoved", at = @At(value = "INVOKE", target = "Ldan200/computercraft/shared/computer/core/ServerComputer;onRemoved()V"))
     private void onRemovedCall(CallbackInfo ci) {
-        this.renderer.onRemoved(((PocketBrainAccessor) (Object) this.brain).callHolder() instanceof PocketHolder.EntityHolder ent ? ent.entity() : null);
+        this.renderer.onRemoved(this.brain.getEntity());
     }
     @Inject(method = "tickServer", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
-        this.renderer.tick(((PocketBrainAccessor) (Object) this.brain).callHolder() instanceof PocketHolder.EntityHolder ent ? ent.entity() : null);
+        this.renderer.tick(this.brain.getEntity());
     }
 
     @Override

@@ -2,8 +2,8 @@ package eu.pb4.cctpatch.mixin.poly;
 
 import com.llamalad7.mixinextras.sugar.Local;
 import dan200.computercraft.shared.ModRegistry;
-import dan200.computercraft.shared.common.HeldItemMenu;
 import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu;
+import dan200.computercraft.shared.media.PrintoutMenu;
 import dan200.computercraft.shared.media.items.PrintoutItem;
 import dan200.computercraft.shared.peripheral.diskdrive.DiskDriveMenu;
 import dan200.computercraft.shared.peripheral.printer.PrinterMenu;
@@ -31,8 +31,8 @@ public class ServerPlayerEntityMixin {
         } else if (handler instanceof PrinterMenu wrapped) {
             new PrinterInventoryGui((ServerPlayerEntity) (Object) this, wrapped);
             cir.setReturnValue(OptionalInt.empty());
-        } else if (handler instanceof HeldItemMenu menu && menu.getStack().getItem() instanceof PrintoutItem) {
-            new PrintedPageGui((ServerPlayerEntity) (Object) this, menu.getStack());
+        } else if (handler instanceof PrintoutMenu menu && menu.getPrintout().getItem() instanceof PrintoutItem) {
+            new PrintedPageGui((ServerPlayerEntity) (Object) this, menu.getPrintout());
             cir.setReturnValue(OptionalInt.empty());
         } else if (handler instanceof DiskDriveMenu menu) {
             new DiskDriveInventoryGui((ServerPlayerEntity) (Object) this, menu);

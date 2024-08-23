@@ -3,12 +3,12 @@
   "package": "eu.pb4.cctpatch.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
-    "PocketBrainAccessor",
     "ServerPlayNetworkHandlerAccessor",
     "TurtleModemAccessor",
     "mod.ComputerCraftMixin",
     "mod.PlatformHelperImplRegistryEntryImplMixin",
     "mod.ServerNetworkingMixin",
+    "mod.block.CustomLecternBlockMixin",
     "mod.block.GenericBlockModelMixin",
     "mod.block.ModRegistryBlocksMixin",
     "mod.block.MonitorBlockEntityMixin",
