@@ -70,8 +70,7 @@ public class TerminalRenderer {
     public static CanvasColor getColor(char c, Colour def, Palette palette) {
         var x = palette.getRenderColours(15 - Terminal.getColour(c, def));
 
-        return CanvasUtils.findClosestColor(
-                ColorHelper.Argb.getArgb(0, Byte.toUnsignedInt(x[0]), Byte.toUnsignedInt(x[1]), Byte.toUnsignedInt(x[2])));
+        return CanvasUtils.findClosestColor(x);
         //return CanvasUtils.findClosestColor(Colour.fromInt(15 - Terminal.getColour(c, def)).getHex());
     }
 
