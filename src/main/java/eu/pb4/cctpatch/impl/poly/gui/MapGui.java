@@ -307,10 +307,8 @@ public class MapGui extends HotbarGui {
             if (camera.squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
                 return false;
             } else if (this.player.getEyePos().squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
-                var pos = camera.add(this.player.getEyePos().subtract(sound.getX(), sound.getY(), sound.getZ())
-                        .rotateY(-this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE)
-                        .rotateX(this.player.getPitch() * MathHelper.RADIANS_PER_DEGREE)
-                );
+                var pos = camera.add(new Vec3d(sound.getX(), sound.getY(), sound.getZ()).subtract(this.player.getEyePos())
+                        .rotateY(-this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE));
                 this.player.networkHandler.sendPacket(new PlaySoundS2CPacket(sound.getSound(), sound.getCategory(), pos.x, pos.y, pos.z, sound.getVolume(), sound.getPitch(), sound.getSeed()));
             }
 

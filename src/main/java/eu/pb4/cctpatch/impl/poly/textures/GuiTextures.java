@@ -26,9 +26,9 @@ public class GuiTextures {
         var texturePath = FabricLoader.getInstance().getModContainer("computercraft").get().getPath("assets/computercraft/textures/gui/");
         var selfPath = FabricLoader.getInstance().getModContainer(ComputerCraftPolymerPatch.MOD_ID).get().getPath("map/");
 
-        SHUTDOWN_ICON = createButton(texturePath, "buttons/turned_off");
-        SHUTDOWN_ACTIVE = createButton(texturePath, "buttons/turned_on");
-        TERMINATE = createButton(texturePath, "buttons/terminate");
+        SHUTDOWN_ICON = createButton(texturePath, "sprites/buttons/turned_off");
+        SHUTDOWN_ACTIVE = createButton(texturePath, "sprites/buttons/turned_on");
+        TERMINATE = createButton(texturePath, "sprites/buttons/terminate");
 
         CLOSE_ICON = createButton(selfPath, "close");
 

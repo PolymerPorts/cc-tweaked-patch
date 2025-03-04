@@ -198,7 +198,7 @@ public class KeyboardView extends ScreenElement {
                             var character = shift || inputExt.isKeyDown(Keys.CAPS_LOCK)
                                 ? key.upperCase() : key.lowerCase();
                             if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
-                                this.gui.input.queueEvent("char", new Object[]{Character.toString(character), false});
+                                this.gui.input.charTyped((byte) character);
                             }
 
                             if (type == ClickType.LEFT_DOWN) {

@@ -1,6 +1,7 @@
 package eu.pb4.cctpatch.mixin.mod.item;
 
 import dan200.computercraft.shared.turtle.items.TurtleItem;
+import eu.pb4.factorytools.api.item.AutoModeledPolymerItem;
 import eu.pb4.factorytools.api.item.RegistryCallbackItem;
 import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import eu.pb4.polymer.core.api.item.PolymerItem;
@@ -25,11 +26,20 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
 @Mixin({ TurtleItem.class })
-public class TurtleItemMixin implements RegistryCallbackItem, PolymerItem {
+public abstract class TurtleItemMixin extends Item implements RegistryCallbackItem, PolymerItem, AutoModeledPolymerItem {
     @Unique
     private PolymerModelData defaultModel;
     @Unique
     private PolymerModelData dyedModel;
+
+    public TurtleItemMixin(Settings settings) {
+        super(settings);
+    }
+
+    @Override
+    public Item getPolymerItem() {
+        return getModelData(this.getDefaultStack()).item();
+    }
 
     @Override
     public Item getPolymerItem(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
@@ -39,6 +49,11 @@ public class TurtleItemMixin implements RegistryCallbackItem, PolymerItem {
     @Override
     public int getPolymerCustomModelData(ItemStack itemStack, @Nullable ServerPlayerEntity player) {
         return getModelData(itemStack).value();
+    }
+
+    @Override
+    public int getPolymerCustomModelData() {
+        return getModelData(this.getDefaultStack()).value();
     }
 
     @Unique

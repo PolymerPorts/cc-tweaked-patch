@@ -16,7 +16,7 @@ public class ComputerCraftMixin {
      * @reason I need to replace item group key getting logic.
      */
     @Overwrite(remap = false)
-    private static void lambda$init$18(ItemGroup group, FabricItemGroupEntries entries) {
+    private static void lambda$init$7(ItemGroup group, FabricItemGroupEntries entries) {
         CommonHooks.onBuildCreativeTab(PolymerItemGroupUtils.getKey(group), entries.getContext(), entries);
     }
 }

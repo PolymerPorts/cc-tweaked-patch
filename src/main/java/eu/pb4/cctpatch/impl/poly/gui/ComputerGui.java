@@ -370,7 +370,7 @@ public final class ComputerGui extends MapGui {
             if (!message.startsWith("/")) {
                 for (var character : message.codePoints().toArray()) {
                     if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
-                        this.input.queueEvent("char", new Object[]{Character.toString(character)});
+                        this.input.charTyped((byte) character);
                     }
                 }
 
@@ -414,7 +414,7 @@ public final class ComputerGui extends MapGui {
                     this.input.keyDown(Keys.BACKSPACE, false);
                     this.keysToReleaseNextTick.add(Keys.BACKSPACE);
                 } else {
-                    this.input.queueEvent("key", new Object[]{Keys.BACKSPACE, false});
+                    this.input.keyDown(Keys.BACKSPACE, false);
                 }
             }
 
@@ -442,7 +442,7 @@ public final class ComputerGui extends MapGui {
                 }
             }
 
-            this.input.queueEvent("char", new Object[]{Character.toString(character)});
+            this.input.charTyped((byte) character);
         }
     }
 
