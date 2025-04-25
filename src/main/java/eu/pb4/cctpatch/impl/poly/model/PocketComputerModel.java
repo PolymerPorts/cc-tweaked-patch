@@ -40,7 +40,7 @@ public record PocketComputerModel(PolymerModelData defaultModel,
     }
 
     public PolymerModelData getModelData(ItemStack itemStack, boolean useMapView) {
-        var computer = PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, itemStack);
+        var computer = ComputerCraftPolymerPatch.server != null ? PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, itemStack) : null;
         var state = computer != null ? computer.getState() : ComputerState.OFF;
         if (DyedColorComponent.getColor(itemStack, -1) != -1) {
             return switch (state) {
