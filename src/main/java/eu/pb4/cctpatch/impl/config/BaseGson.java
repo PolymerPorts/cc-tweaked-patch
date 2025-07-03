@@ -34,7 +34,7 @@ public class BaseGson {
 
     public static final Gson GSON = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting()
             .enableComplexMapKeySerialization()
-            .registerTypeHierarchyAdapter(Identifier.class, new Identifier.Serializer())
+            .registerTypeHierarchyAdapter(Identifier.class, new CodecSerializer(Identifier.CODEC))
 
             .registerTypeHierarchyAdapter(Item.class, new RegistrySerializer<>(Registries.ITEM))
             .registerTypeHierarchyAdapter(Block.class, new RegistrySerializer<>(Registries.BLOCK))

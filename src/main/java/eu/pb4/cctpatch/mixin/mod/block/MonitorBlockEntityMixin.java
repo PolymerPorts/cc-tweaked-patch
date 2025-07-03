@@ -20,6 +20,7 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.ClickType;
 import net.minecraft.util.math.BlockPos;
@@ -80,8 +81,8 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
         }
     }
 
-    @Inject(method = "readNbt", at = @At("TAIL"))
-    private void onReadNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries, CallbackInfo ci) {
+    @Inject(method = "readData", at = @At("TAIL"))
+    private void onReadNbt(ReadView nbt, CallbackInfo ci) {
         if (world != null) {
             this.updateDisplaySize();
         }
@@ -136,7 +137,7 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
                 blockPos = this.getPos().offset(dir).up(this.getHeight() - 1);
             } else {
                 dir = orientation;
-                rotation = facing.getHorizontal();
+                rotation = facing.getHorizontalQuarterTurns();
                 blockPos = this.getPos().offset(dir).offset(facing, orientation.getOffsetY() * (1 - this.height));
             }
 

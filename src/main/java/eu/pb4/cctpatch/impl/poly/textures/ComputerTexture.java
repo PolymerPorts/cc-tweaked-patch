@@ -26,9 +26,9 @@ public record ComputerTexture(
                 main.copy(24, 0, 12, 12),
                 main.copy(0, 24, 12, 12),
                 main.copy(24, 24, 12, 12),
-                sidebar.copy(0, 0, 17, 3),
-                sidebar.copy(0, 3, 17, 7),
-                sidebar.copy(0, 10, 17, 3)
+                sidebar.copy(0, 0, 17, 4),
+                sidebar.copy(0, 4, 17, 7),
+                sidebar.copy(0, 11, 17, 3)
         );
     }
     public static ComputerTexture fromRestitched(CanvasImage image) {

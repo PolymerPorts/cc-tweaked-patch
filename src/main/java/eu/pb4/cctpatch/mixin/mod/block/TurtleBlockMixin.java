@@ -22,6 +22,7 @@ import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
+import xyz.nucleoid.packettweaker.PacketContext;
 
 @Mixin(TurtleBlock.class)
 public class TurtleBlockMixin extends Block implements FactoryBlock {
@@ -30,10 +31,9 @@ public class TurtleBlockMixin extends Block implements FactoryBlock {
     }
 
     @Override
-    public BlockState getPolymerBlockState(BlockState state) {
+    public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
         return Blocks.BARRIER.getDefaultState();
     }
-
 
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {

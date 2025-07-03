@@ -19,6 +19,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
@@ -37,13 +38,14 @@ public class PrintedPageGui extends MapGui {
     @Nullable
     private final CenteredTextView pageText;
 
+    private PlayerInput previousInput = PlayerInput.DEFAULT;
+
     public PrintedPageGui(ServerPlayerEntity player, ItemStack stack) {
         super(player);
 
         this.data = stack.getOrDefault(ModRegistry.DataComponents.PRINTOUT.get(), PrintoutData.EMPTY);
 
         var list = new ArrayList<CanvasImage>();
-        var type = ((PrintoutItem) stack.getItem()).getType();
 
         CanvasImage image = null;
 
@@ -105,7 +107,7 @@ public class PrintedPageGui extends MapGui {
             background.zIndex = 8;
             this.renderer.add(background);
 
-            var offset = type == PrintoutItem.Type.PAGE ? 0 : 8;
+            var offset = stack.isOf(ModRegistry.Items.PRINTED_PAGE.get()) ? 0 : 8;
 
 
             this.leftSide = new ImageView(bX - offset, bY, GuiTextures.PRINTED_PAGE.leftPageSide());
@@ -118,7 +120,7 @@ public class PrintedPageGui extends MapGui {
             this.renderer.add(this.rightSide);
 
 
-            if (type == PrintoutItem.Type.BOOK) {
+            if (stack.isOf(ModRegistry.Items.PRINTED_BOOK.get())) {
                 this.renderer.add(new ImageView(
                     bX - 3,
                     centerY - GuiTextures.PRINTED_PAGE.leatherRight().getHeight() / 2,
@@ -185,28 +187,24 @@ public class PrintedPageGui extends MapGui {
         this.setPage(page);
     }
 
+    @Override
+    public void onPlayerInput(PlayerInput input) {
+        super.onPlayerInput(input);
+        if (this.previousInput.right() != input.right() && input.right()) {
+            this.nextPage();
+        } else if (this.previousInput.left() != input.left() && input.left()) {
+            this.previousPage();
+        }
+
+        this.previousInput = input;
+    }
+
     private void setPage(int page) {
         this.displayedPage.image = this.pages[page];
         this.currentPage = page;
 
         if (this.pageText != null) {
             this.pageText.text = (page + 1) + "/" + this.data.pages();
-        }
-    }
-
-    @Override
-    public void onPlayerAction(PlayerActionC2SPacket.Action action, Direction direction, BlockPos pos) {
-        if (action == PlayerActionC2SPacket.Action.DROP_ITEM) {
-            this.previousPage();
-            return;
-        }
-        super.onPlayerAction(action, direction, pos);
-    }
-
-    @Override
-    public void onPlayerCommand(int id, ClientCommandC2SPacket.Mode action, int data) {
-        if (action == ClientCommandC2SPacket.Mode.OPEN_INVENTORY) {
-            this.nextPage();
         }
     }
 }

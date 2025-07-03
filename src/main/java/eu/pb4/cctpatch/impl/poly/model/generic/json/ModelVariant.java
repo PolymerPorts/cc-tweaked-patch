@@ -3,11 +3,9 @@ package eu.pb4.cctpatch.impl.poly.model.generic.json;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 public record ModelVariant(Identifier model, int x, int y, boolean uvlock, int weigth) {
     private static final Codec<ModelVariant> BASE = RecordCodecBuilder.create(instance -> instance.group(

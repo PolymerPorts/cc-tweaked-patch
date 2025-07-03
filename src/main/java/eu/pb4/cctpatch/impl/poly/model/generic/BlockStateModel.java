@@ -6,7 +6,7 @@ import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.util.math.random.Random;
 
 import java.util.ArrayList;
@@ -14,6 +14,7 @@ import java.util.List;
 
 public class BlockStateModel extends BlockModel {
     private final List<ItemDisplayElement> modelElements = new ArrayList<>();
+
     public BlockStateModel(BlockState state) {
         var model = BlockStateModelManager.get(state);
 
@@ -25,22 +26,26 @@ public class BlockStateModel extends BlockModel {
         super.notifyUpdate(updateType);
         if (updateType == BlockAwareAttachment.BLOCK_STATE_UPDATE) {
             applyModel(BlockStateModelManager.get(this.blockState()));
+            applyUpdates(this.blockState());
         }
+    }
+
+    protected void applyUpdates(BlockState blockState) {
     }
 
     private void applyModel(List<BlockStateModelManager.ModelGetter> models) {
         var random = Random.create(this.blockPos().asLong());
         int i = 0;
         while (models.size() < modelElements.size()) {
-            this.removeElement(this.modelElements.remove(this.modelElements.size() - 1));
+            this.removeElement(this.modelElements.removeLast());
         }
         for (; i < models.size(); i++) {
             var newModel = false;
             ItemDisplayElement element;
-            if (this.modelElements.size() == i) {
+            if (this.modelElements.size() <= i) {
                 element = ItemDisplayElementUtil.createSimple();
                 element.setTeleportDuration(0);
-                element.setModelTransformation(ModelTransformationMode.NONE);
+                element.setItemDisplayContext(ItemDisplayContext.NONE);
                 element.setYaw(180);
                 newModel = true;
                 this.modelElements.add(element);

@@ -21,6 +21,7 @@ import net.minecraft.network.packet.s2c.play.ChatSuggestionsS2CPacket;
 import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -120,7 +121,9 @@ public final class ComputerGui extends MapGui {
     public final AbstractComputerMenu wrapped;
     private final ServerComputer computer;
     public String currentInput = "";
-    public IntSet keysToReleaseNextTick = new IntArraySet();
+    public final IntSet keysToReleaseNextTick = new IntArraySet();
+
+    private PlayerInput previousInput = PlayerInput.DEFAULT;
 
     public ComputerGui(ServerPlayerEntity player, AbstractComputerMenu menu) {
         super(player);
@@ -322,6 +325,42 @@ public final class ComputerGui extends MapGui {
                 gui.input.keyUp(key);
             }
         };
+    }
+
+    @Override
+    public void onPlayerInput(PlayerInput input) {
+        super.onPlayerInput(input);
+        
+        if (this.previousInput.right() != input.right()) {
+            if (input.right()) this.input.keyDown(Keys.RIGHT, false);
+            else this.input.keyUp(Keys.RIGHT);
+        }
+        if (this.previousInput.left() != input.left()) {
+            if (input.left()) this.input.keyDown(Keys.LEFT, false);
+            else this.input.keyUp(Keys.LEFT);
+        }
+        if (this.previousInput.forward() != input.forward()) {
+            if (input.forward()) this.input.keyDown(Keys.UP, false);
+            else this.input.keyUp(Keys.UP);
+        }
+        if (this.previousInput.backward() != input.backward()) {
+            if (input.backward()) this.input.keyDown(Keys.DOWN, false);
+            else this.input.keyUp(Keys.DOWN);
+        }
+        if (this.previousInput.jump() != input.jump()) {
+            if (input.jump()) this.input.keyDown(Keys.ENTER, false);
+            else this.input.keyUp(Keys.ENTER);
+        }
+        if (this.previousInput.sneak() != input.sneak()) {
+            if (input.sneak()) this.input.keyDown(Keys.LEFT_SHIFT, false);
+            else this.input.keyUp(Keys.LEFT_SHIFT);
+        }
+        if (this.previousInput.sprint() != input.sprint()) {
+            if (input.sprint()) this.input.keyDown(Keys.LEFT_CONTROL, false);
+            else this.input.keyUp(Keys.LEFT_CONTROL);
+        }
+        
+        this.previousInput = input;
     }
 
     public void render() {

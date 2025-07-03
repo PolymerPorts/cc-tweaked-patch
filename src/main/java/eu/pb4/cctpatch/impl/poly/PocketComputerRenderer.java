@@ -13,6 +13,8 @@ import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.network.packet.s2c.play.SetPlayerInventoryS2CPacket;
+import net.minecraft.screen.PlayerScreenHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -36,24 +38,25 @@ public class PocketComputerRenderer {
     }
 
     public void tick(Entity entity) {
+        if (!PatchConfig.instance.displayPocketComputerScreenInHand || !(entity instanceof ServerPlayerEntity player) || !this.computer.isOn()) {
+            if (this.canvas != null) {
+                this.canvas.destroy();
+            }
+            this.canvas = null;
+            this.player = null;
+            return;
+        }
         var mut = new MutableObject<ItemStack>();
-        if (PatchConfig.instance.displayPocketComputerScreenInHand && entity instanceof ServerPlayerEntity player
-                && this.findStack(player, mut)
-        ) {
+
+        var slot = findStack(player, mut);
+        if (slot != -1) {
             if (this.canvas == null) {
                 this.player = player;
                 this.canvas = DrawableCanvas.create();
                 this.drawInitial();
                 this.canvas.addPlayer(player);
+                player.networkHandler.sendPacket(new SetPlayerInventoryS2CPacket(slot, mut.getValue()));
 
-                int slot;
-                if (mut.getValue() == player.getMainHandStack()) {
-                    slot = player.getInventory().selectedSlot;
-                } else {
-                    slot = 40; // offhand
-                }
-
-                player.networkHandler.sendPacket(new ScreenHandlerSlotUpdateS2CPacket(-2, 0, slot, mut.getValue()));
             } else if (this.player != player) {
                 this.canvas.removePlayer(this.player);
                 this.canvas.addPlayer(player);
@@ -69,21 +72,17 @@ public class PocketComputerRenderer {
         }
     }
 
-    private boolean findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
-        if (player.getMainHandStack().getItem() instanceof PocketComputerItem
-                && PocketComputerItem.getServerComputer(player.server, player.getMainHandStack()) == this.computer) {
-            if (mut != null) {
-                mut.setValue(player.getMainHandStack());
+    private int findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
+        for (var slot = 0; slot < player.getInventory().size(); slot++) {
+            if (player.getInventory().getStack(slot).getItem() instanceof PocketComputerItem
+                    && PocketComputerItem.getServerComputer(player.getServer(), player.getInventory().getStack(slot)) == this.computer) {
+                if (mut != null) {
+                    mut.setValue(player.getInventory().getStack(slot));
+                }
+                return slot;
             }
-            return true;
-        } else if (player.getOffHandStack().getItem() instanceof PocketComputerItem
-                && PocketComputerItem.getServerComputer(player.server, player.getOffHandStack()) == this.computer) {
-            if (mut != null) {
-                mut.setValue(player.getOffHandStack());
-            }
-            return true;
         }
-        return false;
+        return -1;
     }
 
     private void drawInitial() {
@@ -134,15 +133,7 @@ public class PocketComputerRenderer {
     }
 
     public void updateValues(Entity entity) {
-        if (PatchConfig.instance.displayPocketComputerScreenInHand && entity instanceof ServerPlayerEntity player
-                && findStack(player, null)
-        ) {
-
-        } else if (this.canvas != null) {
-            this.canvas.destroy();
-            this.canvas = null;
-            this.player = null;
-        }
+        tick(entity);
     }
 
     public int id() {

@@ -3,10 +3,12 @@ package eu.pb4.cctpatch.impl.poly.model.generic.json;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.dynamic.Codecs;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public record MultiPartDefinition(When when, List<ModelVariant> apply) {
     public static final Codec<MultiPartDefinition> CODEC = RecordCodecBuilder.create(instance -> instance.group(
@@ -19,7 +21,7 @@ public record MultiPartDefinition(When when, List<ModelVariant> apply) {
                        Optional<Map<String, String>> base) {
         public static final When DEFAULT = new When(Optional.empty(), Optional.empty(), Optional.empty());
 
-        private static final Codec<Map<String, String>> STR_MAP = Codec.unboundedMap(Codec.STRING, Codec.STRING);
+        private static final Codec<Map<String, String>> STR_MAP = Codec.unboundedMap(Codec.STRING, Codecs.BASIC_OBJECT.xmap(String::valueOf, Function.identity()));
         private static final Codec<List<Map<String, String>>> LIST_STR_MAP = STR_MAP.listOf();
         public static final Codec<When> CODEC = Codec.either(
                 LIST_STR_MAP.fieldOf("OR")

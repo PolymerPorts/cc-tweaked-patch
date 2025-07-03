@@ -2,15 +2,18 @@ package eu.pb4.cctpatch.impl.poly.model.generic;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import eu.pb4.cctpatch.impl.poly.AutoModeledPolymerBlock;
+import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
+import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.ModelVariant;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.MultiPartDefinition;
 import eu.pb4.cctpatch.impl.poly.model.generic.json.StateDefinition;
-import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.item.ItemStack;
+import net.minecraft.particle.ItemStackParticleEffect;
+import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.predicate.block.BlockStatePredicate;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.Identifier;
@@ -27,23 +30,23 @@ import java.util.*;
 
 public class BlockStateModelManager {
     private static final Map<BlockState, List<ModelGetter>> MAP = new HashMap<>();
+    private static final Map<BlockState, ParticleEffect> PARTICLE = new HashMap<>();
 
     public static List<ModelGetter> get(BlockState state) {
         return MAP.getOrDefault(state, List.of());
     }
-
-    private static final Map<Identifier, ItemStack> EXISTING_MODELS = new HashMap<>();
+    public static ParticleEffect getParticle(BlockState state) {
+        return PARTICLE.getOrDefault(state, ParticleTypes.ANGRY_VILLAGER);
+    }
 
     public static void addBlock(Identifier identifier, Block block) {
-        if (!(block instanceof AutoModeledPolymerBlock)) {
-
-        }
         try {
+            var rand = Random.create(123);
             var path = FabricLoader.getInstance().getModContainer("computercraft").get()
                     .findPath("assets/" + identifier.getNamespace() + "/blockstates/" + identifier.getPath() + ".json").get();
 
             var decoded = StateDefinition.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(Files.readString(path)));
-            var modelDef = decoded.result().get().getFirst();
+            var modelDef = decoded.getOrThrow().getFirst();
 
             if (modelDef.variants().isPresent()) {
                 var list = new ArrayList<Pair<BlockStatePredicate, List<ModelData>>>();
@@ -53,6 +56,9 @@ public class BlockStateModelManager {
                     for (var state : block.getStateManager().getStates()) {
                         if (pair.getLeft().test(state)) {
                             MAP.put(state, List.of(ModelGetter.of(pair.getRight())));
+                            if (!pair.getRight().isEmpty()) {
+                                PARTICLE.put(state, new ItemStackParticleEffect(ParticleTypes.ITEM, pair.getRight().getFirst().stack));
+                            }
                         }
                     }
                 }
@@ -72,6 +78,10 @@ public class BlockStateModelManager {
                                 }
                                 objects.add(ModelGetter.of(pair.getRight()));
                                 MAP.put(state, objects);
+                                if (!objects.isEmpty() && !PARTICLE.containsKey(state)) {
+                                    PARTICLE.put(state, new ItemStackParticleEffect(ParticleTypes.ITEM, objects.getFirst().getModel(rand).stack));
+                                }
+
                                 break;
                             }
                         }
@@ -79,8 +89,9 @@ public class BlockStateModelManager {
                 }
             }
 
+
         } catch (Throwable e) {
-            e.printStackTrace();
+            ComputerCraftPolymerPatch.LOGGER.warn("Failed to decode model for {}", identifier, e);
         }
     }
 
@@ -143,16 +154,18 @@ public class BlockStateModelManager {
 
             var predicate = BlockStatePredicate.forBlock(block);
 
+
             for (var statePair : stateMap) {
-                var split = statePair.split("=", 2);
+                if (!statePair.isEmpty()) {
+                    var split = statePair.split("=", 2);
+                    var prop = (Property) block.getStateManager().getProperty(split[0]);
 
-                var prop = (Property) block.getStateManager().getProperty(split[0]);
+                    if (prop == null) {
+                        continue start;
+                    }
 
-                if (prop == null) {
-                    continue start;
+                    predicate.with(prop, x -> prop.name((Comparable) x).equals(split[1]));
                 }
-
-                predicate.with(prop, x -> prop.name((Comparable) x).equals(split[1]));
             }
 
             var modelData = parseBaseVariants(pair.getValue());
@@ -164,7 +177,7 @@ public class BlockStateModelManager {
         var modelData = new ArrayList<ModelData>();
 
         for (var v : value) {
-            var stack = EXISTING_MODELS.computeIfAbsent(v.model(), BaseItemProvider::requestModel);
+            var stack = ItemDisplayElementUtil.getModel(v.model());
             modelData.add(new ModelData(stack, new Quaternionf()
                     .rotateY(-MathHelper.RADIANS_PER_DEGREE * v.y())
                     .rotateX(MathHelper.RADIANS_PER_DEGREE * v.x()),
@@ -195,20 +208,20 @@ public class BlockStateModelManager {
         }
     }
 
-    private record WeightedGetter(List<Weighted.Present<ModelData>> data, int weightedSum) implements ModelGetter {
+    private record WeightedGetter(List<Weighted<ModelData>> data, int weightedSum) implements ModelGetter {
         public static ModelGetter create(List<ModelData> data) {
-            var list = new ArrayList<Weighted.Present<ModelData>>();
+            var list = new ArrayList<Weighted<ModelData>>();
             for (var d : data) {
-                list.add(Weighted.of(d, d.weight));
+                list.add(new Weighted<>(d, d.weight));
             }
-            var x = Weighting.getWeightSum(list);
+            var x = Weighting.getWeightSum(list, Weighted::weight);
 
             return new WeightedGetter(list, x);
         }
 
         @Override
         public ModelData getModel(Random random) {
-            return Weighting.getAt(this.data, Math.abs((int) random.nextLong()) % this.weightedSum).orElse(this.data.get(0)).data();
+            return Weighting.getAt(this.data, Math.abs((int) random.nextLong()) % this.weightedSum, Weighted::weight).orElse(this.data.get(0)).value();
         }
     }
     public record ModelData(ItemStack stack, Quaternionfc quaternionfc, int weight) {}

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.6.+'
+	id 'fabric-loom' version '1.10.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 }
@@ -33,6 +33,7 @@ repositories {
 			content { includeGroup("nl.theepicblock") }
 		}
 	}
+	mavenLocal()
 }
 
 dependencies {
@@ -44,20 +45,25 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "cc.tweaked:cc-tweaked-1.21.1-fabric:1.115.1"
+	modImplementation "cc.tweaked:cc-tweaked-1.21.7-fabric:1.116.0"
 
-	modImplementation include('eu.pb4:sgui:1.6.0+1.21')
-	modImplementation include('eu.pb4:player-data-api:0.6.0+1.21')
-	modImplementation include('eu.pb4:map-canvas-api:0.4.2+1.21.1')
-	modImplementation include('eu.pb4:factorytools:0.3.2+1.21')
-	modImplementation 'eu.pb4:polymer-core:0.9.18+1.21.1'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.9.18+1.21.1'
-	modImplementation 'eu.pb4:polymer-autohost:0.9.18+1.21.1'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.9.18+1.21.1'
+	modImplementation include('eu.pb4:sgui:1.10.0+1.21.6')
+	modImplementation include('eu.pb4:player-data-api:0.8.0+1.21.6')
+	modImplementation include('eu.pb4:map-canvas-api:0.5.1+1.21.5')
+	modImplementation include('eu.pb4:factorytools:0.7.1+1.21.6')
+	modImplementation 'eu.pb4:polymer-core:0.13.3+1.21.6'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.13.3+1.21.6'
+	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.13.4-dev+1.21.7'
+	modImplementation 'eu.pb4:polymer-autohost:0.13.3+1.21.6'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.13.3+1.21.6'
 
 
 	modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {
 		exclude(group: "org.quiltmc", module: "quilt-loader")
+	}
+
+	modImplementation include("nl.theepicblock:resource-locator-api:0.6.1+1.21.4") {
+		exclude group: 'net.fabricmc', module: 'fabric-loader'
 	}
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 

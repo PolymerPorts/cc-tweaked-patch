@@ -3,12 +3,14 @@ package eu.pb4.cctpatch.mixin.poly;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import eu.pb4.cctpatch.impl.poly.gui.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.message.MessageChain;
 import net.minecraft.network.message.SignedMessage;
 import net.minecraft.network.packet.c2s.play.*;
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket;
+import net.minecraft.network.packet.s2c.play.PlayerRotationS2CPacket;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ConnectedClientData;
@@ -52,7 +54,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Inject(method = "onChatMessage", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ChatMessageC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
-            this.player.server.execute(() -> {
+            this.player.getServer().execute(() -> {
                 computerGui.onChatInput(packet.chatMessage());
             });
             ci.cancel();
@@ -86,17 +88,17 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
             double l = instance.getX() - this.lastTickX;
             double m = instance.getY() - this.lastTickY;
             double n = instance.getZ() - this.lastTickZ;
-            this.player.getServerWorld().getChunkManager().updatePosition(this.player);
+            this.player.getWorld().getChunkManager().updatePosition(this.player);
             this.player.handleFall(l, m , n, player.isOnGround());
-            this.player.setOnGround(player.isOnGround(), new Vec3d(l, m , n));
+            this.player.setOnGround(player.isOnGround());
             this.syncWithPlayerPosition();
             return false;
         }
         return true;
     }
 
-    @Inject(method = "requestTeleport(DDDFFLjava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-    private void ccp_noTeleport(double x, double y, double z, float yaw, float pitch, Set<PositionFlag> flags, CallbackInfo ci) {
+    @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
+    private void ccp_noTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             ci.cancel();
         }
@@ -106,7 +108,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private void ccp_onMove(PlayerMoveC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             if (packet.getPitch(0) != 0 || packet.getYaw(0) != 0) {
-                this.sendPacket(new PlayerPositionLookS2CPacket(player.getX(), computerGui.pos.getY(), player.getZ(), 0, 0, EnumSet.noneOf(PositionFlag.class), 0));
+                this.sendPacket(new PlayerRotationS2CPacket(0, 0));
             }
             this.server.execute(() -> {
                 var xRot = packet.getPitch(computerGui.xRot);
@@ -143,7 +145,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private void ccp_onVehicleMove(PlayerInputC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
-                computerGui.onPlayerInput(packet.getForward(), packet.getSideways(), packet.isJumping(), packet.isSneaking());
+                computerGui.onPlayerInput(packet.input());
             });
             ci.cancel();
         }

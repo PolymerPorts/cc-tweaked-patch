@@ -2,7 +2,9 @@ package eu.pb4.cctpatch.impl.poly.gui;
 
 import com.google.common.base.Predicates;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.tree.ArgumentCommandNode;
+import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
 import com.mojang.datafixers.util.Pair;
 import eu.pb4.cctpatch.impl.poly.render.CanvasRenderer;
@@ -29,12 +31,14 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityPose;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.passive.HorseEntity;
+import net.minecraft.entity.player.PlayerPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapDecorationType;
@@ -52,6 +56,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.PlayerInput;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -137,7 +142,7 @@ public class MapGui extends HotbarGui {
         this.xRot = player.getPitch();
         this.yRot = player.getYaw();
         player.networkHandler.sendPacket(VirtualEntityUtils.createRidePacket(horse.getEntityId(), IntList.of(player.getId())));
-        player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED, GameMode.SPECTATOR.getId()));
+        player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED, GameMode.SPECTATOR.getIndex()));
         player.networkHandler.sendPacket(new EntityS2CPacket.Rotate(player.getId(), (byte) 0, (byte) 0, player.isOnGround()));
         player.networkHandler.sendPacket(new EntityTrackerUpdateS2CPacket(player.getId(), List.of(DataTracker.SerializedEntry.of(EntityTrackedData.POSE, EntityPose.STANDING))));
         player.networkHandler.sendPacket(COMMAND_PACKET);
@@ -151,7 +156,7 @@ public class MapGui extends HotbarGui {
             this.setSlot(i, new ItemStack(Items.ENDER_EYE));
         }
 
-        player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("text.cctpatch.exit", "Ctrl", Text.keybind("key.drop"))
+        player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.translatable("text.cctpatch.exit", Text.keybind("key.inventory"))
                 .formatted(Formatting.RED), true));
     }
 
@@ -190,9 +195,9 @@ public class MapGui extends HotbarGui {
         //this.virtualDisplay2.destroy();
         this.canvas.removePlayer(this.player);
         this.canvas.destroy();
-        this.player.server.getCommandManager().sendCommandTree(this.player);
+        this.player.getServer().getCommandManager().sendCommandTree(this.player);
         this.holder.stopWatching(this.player);
-        var world = this.player.getServerWorld();
+        var world = this.player.getWorld();
         if (!world.isRaining()) {
             this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_STOPPED, 0.0F));
         } else {
@@ -201,8 +206,8 @@ public class MapGui extends HotbarGui {
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_GRADIENT_CHANGED, world.getRainGradient(1)));
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED, world.getThunderGradient(1)));        this.player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(this.player));
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED,
-                this.player.interactionManager.getGameMode().getId()));
-        this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(player.getX(), player.getY(), player.getZ(), player.getYaw(), player.getPitch(), EnumSet.noneOf(PositionFlag.class), 0));
+                this.player.interactionManager.getGameMode().getIndex()));
+        this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(this.player.getId(), PlayerPosition.fromEntity(this.player), EnumSet.noneOf(PositionFlag.class)));
         super.onClose();
     }
 
@@ -268,12 +273,14 @@ public class MapGui extends HotbarGui {
         }
     }
 
-    // deltaX/Z is currently useless while in camera mode, as it is always 0
-    public void onPlayerInput(float deltaX, float deltaZ, boolean jumping, boolean shiftKeyDown) {
+    public void onPlayerInput(PlayerInput input) {
 
     }
 
     public void onPlayerCommand(int id, ClientCommandC2SPacket.Mode action, int data) {
+        if (action == ClientCommandC2SPacket.Mode.OPEN_INVENTORY) {
+            this.close();
+        }
     }
 
     static {
@@ -292,7 +299,23 @@ public class MapGui extends HotbarGui {
             )
         );
 
-        COMMAND_PACKET = new CommandTreeS2CPacket(commandNode);
+        COMMAND_PACKET = new CommandTreeS2CPacket(commandNode, new CommandTreeS2CPacket.CommandNodeInspector<CommandSource>() {
+            @Nullable
+            @Override
+            public Identifier getSuggestionProviderId(ArgumentCommandNode<CommandSource, ?> node) {
+                return SuggestionProviders.computeId(SuggestionProviders.ASK_SERVER);
+            }
+
+            @Override
+            public boolean isExecutable(CommandNode<CommandSource> node) {
+                return true;
+            }
+
+            @Override
+            public boolean hasRequiredLevel(CommandNode<CommandSource> node) {
+                return false;
+            }
+        });
     }
 
 
@@ -308,7 +331,7 @@ public class MapGui extends HotbarGui {
                 return false;
             } else if (this.player.getEyePos().squaredDistanceTo(sound.getX(), sound.getY(), sound.getZ()) < 64 * 64) {
                 var pos = camera.add(new Vec3d(sound.getX(), sound.getY(), sound.getZ()).subtract(this.player.getEyePos())
-                        .rotateY(-this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE));
+                        .rotateY(this.player.getYaw() * MathHelper.RADIANS_PER_DEGREE));
                 this.player.networkHandler.sendPacket(new PlaySoundS2CPacket(sound.getSound(), sound.getCategory(), pos.x, pos.y, pos.z, sound.getVolume(), sound.getPitch(), sound.getSeed()));
             }
 
@@ -337,7 +360,7 @@ public class MapGui extends HotbarGui {
 
         @Override
         public ServerWorld getWorld() {
-            return MapGui.this.getPlayer().getServerWorld();
+            return MapGui.this.getPlayer().getWorld();
         }
 
         @Override

@@ -1,36 +1,31 @@
 package eu.pb4.cctpatch.impl.poly.model;
 
 import dan200.computercraft.api.ComputerCraftAPI;
-import dan200.computercraft.api.turtle.AbstractTurtleUpgrade;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
-import dan200.computercraft.shared.ModRegistry;
+import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
-import dan200.computercraft.shared.turtle.upgrades.TurtleCraftingTable;
-import dan200.computercraft.shared.turtle.upgrades.TurtleSpeaker;
-import dan200.computercraft.shared.turtle.upgrades.TurtleTool;
 import dan200.computercraft.shared.util.Holiday;
-import eu.pb4.cctpatch.mixin.TurtleModemAccessor;
-import eu.pb4.factorytools.api.resourcepack.BaseItemProvider;
+import eu.pb4.cctpatch.impl.poly.res.TurtleOverlay;
+import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.EmptyUpgradeModel;
+import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.ItemUpgradeModel;
+import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.TurtleUpgradeModel;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.block.BlockState;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.FireworkExplosionComponent;
+import net.minecraft.component.type.DyedColorComponent;
+import net.minecraft.item.ItemDisplayContext;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.RotationAxis;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
@@ -39,14 +34,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public class TurtleModel extends BlockModel {
-    public static final ModemModel NORMAL_MODEM_MODEL = ModemModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_modem_normal"));
-    public static final ModemModel ADVANCED_MODEM_MODEL = ModemModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_modem_advanced"));
-    public static final SidedModel SPEAKER_MODEL = SidedModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_speaker"));
-    public static final SidedModel CRAFTING_MODEL = SidedModel.of(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_crafting_table"));
-    public static final ItemStack COLORED_TURTLE_MODEL = BaseItemProvider.requestModel(Items.FIREWORK_STAR, Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
+    public static final ItemStack COLORED_TURTLE_MODEL = ItemDisplayElementUtil.getModel(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
     public static final Identifier ELF_OVERLAY_MODEL = Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
-
-    private static final Map<Identifier, ItemStack> OVERLAYS = new HashMap<>();
+    public static final Map<Identifier, TurtleOverlay> OVERLAY = new HashMap<>();
+    public static final Map<Identifier, TurtleUpgradeModel> UPGRADES = new HashMap<>();
     private final ItemDisplayElement base;
     private final ItemDisplayElement overlay;
     private final ItemDisplayElement overlay2;
@@ -54,41 +45,35 @@ public class TurtleModel extends BlockModel {
     private final ItemDisplayElement rightAttachment;
 
     private float baseYaw;
-    private ITurtleUpgrade leftUpgrade;
-    private ITurtleUpgrade rightUpgrade;
+    private UpgradeData<ITurtleUpgrade> leftUpgrade;
+    private UpgradeData<ITurtleUpgrade> rightUpgrade;
     private Vec3d lastPos;
     private int color = -1;
     private Identifier overlayId;
     private Identifier overlayId2;
 
-    public static void registerOverlay(Identifier identifier) {
-        if (!OVERLAYS.containsKey(identifier)) {
-            OVERLAYS.put(identifier, BaseItemProvider.requestModel(identifier));
-        }
-    }
-
     public TurtleModel(BlockState state, BlockPos pos) {
         this.lastPos = Vec3d.ofCenter(pos);
-        this.baseYaw = state.get(TurtleBlock.FACING).asRotation();
+        this.baseYaw = state.get(TurtleBlock.FACING).getPositiveHorizontalDegrees();
         this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem()));
         this.base.setTeleportDuration(1);
-        this.base.setModelTransformation(ModelTransformationMode.NONE);
+        this.base.setItemDisplayContext(ItemDisplayContext.NONE);
         this.base.setYaw(this.baseYaw);
         this.overlay = ItemDisplayElementUtil.createSimple();
         this.overlay.setTeleportDuration(1);
-        this.overlay.setModelTransformation(ModelTransformationMode.NONE);
+        this.overlay.setItemDisplayContext(ItemDisplayContext.NONE);
         this.overlay.setYaw(this.baseYaw);
         this.overlay2 = ItemDisplayElementUtil.createSimple();
         this.overlay2.setTeleportDuration(1);
-        this.overlay2.setModelTransformation(ModelTransformationMode.NONE);
+        this.overlay2.setItemDisplayContext(ItemDisplayContext.NONE);
         this.overlay2.setYaw(this.baseYaw);
         this.leftAttachment = ItemDisplayElementUtil.createSimple();
         this.leftAttachment.setInterpolationDuration(1);
-        this.leftAttachment.setModelTransformation(ModelTransformationMode.NONE);
+        this.leftAttachment.setItemDisplayContext(ItemDisplayContext.NONE);
         this.leftAttachment.setYaw(this.baseYaw);
         this.rightAttachment = ItemDisplayElementUtil.createSimple();
         this.rightAttachment.setInterpolationDuration(1);
-        this.rightAttachment.setModelTransformation(ModelTransformationMode.NONE);
+        this.rightAttachment.setItemDisplayContext(ItemDisplayContext.NONE);
         this.rightAttachment.setYaw(this.baseYaw);
         this.addElement(this.base);
         this.addElement(this.overlay);
@@ -120,34 +105,18 @@ public class TurtleModel extends BlockModel {
         this.leftAttachment.setYaw(this.baseYaw);
         this.rightAttachment.setYaw(this.baseYaw);
     }
-    public void setUpgrades(TurtleBrain brain, ITurtleUpgrade left, ITurtleUpgrade right) {
-        if (this.leftUpgrade != left) {
-            this.leftUpgrade = left;
-            this.leftAttachment.setItem(getUpgradeModel(left, brain, TurtleSide.LEFT));
-        }
-        if (this.rightUpgrade != right) {
-            this.rightUpgrade = right;
-            this.rightAttachment.setItem(getUpgradeModel(right, brain, TurtleSide.RIGHT));
-        }
-    }
 
-    private ItemStack getUpgradeModel(ITurtleUpgrade upgrade, TurtleBrain brain, TurtleSide turtleSide) {
-        if(upgrade == null){
-            return ItemStack.EMPTY;
-        }
-        if (upgrade instanceof TurtleModemAccessor modem) {
-            var type = modem.isAdvanced() ? ADVANCED_MODEM_MODEL : NORMAL_MODEM_MODEL;
-            var x = brain.getUpgradeData(turtleSide).get(ModRegistry.DataComponents.ON.get());
-            if (x != null && x.isPresent() && x.get())
-                return type.onModel.get(turtleSide);
-            return type.offModel.get(turtleSide);
-        } else if (upgrade instanceof TurtleSpeaker) {
-            return SPEAKER_MODEL.get(turtleSide);
-        } else if (upgrade instanceof TurtleCraftingTable) {
-            return CRAFTING_MODEL.get(turtleSide);
+    private void setupUpgradeModel(UpgradeData<ITurtleUpgrade> upgrade, TurtleBrain brain, TurtleSide turtleSide, ItemDisplayElement attachment) {
+        if (upgrade == null) {
+            EmptyUpgradeModel.INSTANCE.setupModel(null, brain, turtleSide, attachment);
+            return;
         }
 
-        return upgrade.getCraftingItem();
+        var id = upgrade.holder().registryKey().getValue();
+
+        var model = UPGRADES.getOrDefault(id, ItemUpgradeModel.INSTANCE);
+
+        model.setupModel(upgrade, brain, turtleSide, attachment);
     }
 
     public void update(TurtleBrain turtleBrain) {
@@ -155,7 +124,7 @@ public class TurtleModel extends BlockModel {
         this.setYaw(turtleBrain.getVisualYaw(1));
 
         if (!pos.equals(this.lastPos)) {
-            this.base.notifyMove(this.lastPos, pos, pos.subtract(this.lastPos));
+            this.base.setOverridePos(pos);
             this.lastPos = pos;
         }
 
@@ -165,70 +134,39 @@ public class TurtleModel extends BlockModel {
                 this.base.setItem(ItemDisplayElementUtil.getModel(this.blockState().getBlock().asItem()));
             } else {
                 var model = COLORED_TURTLE_MODEL.copy();
-                model.set(DataComponentTypes.FIREWORK_EXPLOSION, new FireworkExplosionComponent(FireworkExplosionComponent.Type.BURST, IntList.of(this.color), IntList.of(), false, false));
+                model.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(this.color));
                 this.base.setItem(model);
             }
         }
 
         {
-            var overlay = turtleBrain.getOverlay();
+            var overlay = OVERLAY.get(turtleBrain.getOverlay());
             Identifier overlay2 = null;
-            if ((overlay == null || overlay.value().showElfOverlay()) && Holiday.getCurrent() == Holiday.CHRISTMAS) {
+            if ((overlay == null || overlay.showElfOverlay()) && Holiday.getCurrent() == Holiday.CHRISTMAS) {
                 overlay2 = ELF_OVERLAY_MODEL;
             }
 
-            if ((this.overlayId != null && overlay == null) || (overlay != null && !overlay.value().model().equals(this.overlayId))) {
-                this.overlayId = overlay != null ? overlay.value().model() : null;
-                this.overlay.setItem(OVERLAYS.getOrDefault(this.overlayId, ItemStack.EMPTY));
+            if ((this.overlayId != null && overlay == null) || (turtleBrain.getOverlay() != null && !turtleBrain.getOverlay().equals(this.overlayId))) {
+                this.overlayId = overlay != null ? turtleBrain.getOverlay() : null;
+                this.overlay.setItem(overlay == null ? ItemStack.EMPTY : ItemDisplayElementUtil.getModel(overlay.model()));
             }
 
             if (!Objects.equals(overlay2, this.overlayId2)) {
                 this.overlayId2 = overlay2;
-                this.overlay2.setItem(OVERLAYS.getOrDefault(this.overlayId2, ItemStack.EMPTY));
+                this.overlay.setItem(ItemDisplayElementUtil.getModel(overlay2));
             }
         }
 
-        this.setUpgrades(turtleBrain, turtleBrain.getUpgrade(TurtleSide.LEFT), turtleBrain.getUpgrade(TurtleSide.RIGHT));
+        var leftUpgrade = turtleBrain.getUpgradeWithData(TurtleSide.LEFT);
+        //if (!Objects.equals(this.leftUpgrade, leftUpgrade)) {
+            this.leftUpgrade = leftUpgrade;
+            setupUpgradeModel(leftUpgrade, turtleBrain, TurtleSide.LEFT, this.leftAttachment);
+        //}
 
-        var mat = BlockModel.mat();
-        for (var side : TurtleSide.values()) {
-            var upgrade = side == TurtleSide.RIGHT ? rightUpgrade : leftUpgrade;
-            if (upgrade == null) continue;
-            var toolAngle = turtleBrain.getToolRenderAngle(side, 1);
-            mat.rotate(RotationAxis.NEGATIVE_X.rotationDegrees(toolAngle));
-            if (upgrade instanceof TurtleTool) {
-                mat.rotateY(MathHelper.HALF_PI);
-                mat.translate(0, 0, side == TurtleSide.RIGHT ? -6.5f / 16f : 6.5f / 16f);
-            }
-
-            var att = (side == TurtleSide.RIGHT ? this.rightAttachment : this.leftAttachment);
-            att.setTransformation(mat);
-            mat.identity();
-            if (att.isTransformationDirty()) {
-                att.startInterpolation();
-            }
-        }
-    }
-
-    public record ModemModel(SidedModel onModel, SidedModel offModel) {
-        public static ModemModel of(Identifier identifier) {
-            return new ModemModel(
-                    SidedModel.of(identifier.withSuffixedPath("_on")),
-                    SidedModel.of(identifier.withSuffixedPath("_off"))
-            );
-        }
-    }
-
-    public record SidedModel(ItemStack left, ItemStack right) {
-        public static SidedModel of(Identifier identifier) {
-            return new SidedModel(
-                    BaseItemProvider.requestModel(identifier.withSuffixedPath("_left")),
-                    BaseItemProvider.requestModel(identifier.withSuffixedPath("_right"))
-            );
-        }
-
-        public ItemStack get(TurtleSide side) {
-            return side == TurtleSide.RIGHT ? right : left;
-        }
+        var rightUpgrade = turtleBrain.getUpgradeWithData(TurtleSide.RIGHT);
+        //if (!Objects.equals(this.rightUpgrade, rightUpgrade)) {
+            this.rightUpgrade = rightUpgrade;
+            setupUpgradeModel(rightUpgrade, turtleBrain, TurtleSide.RIGHT, this.rightAttachment);
+        //}
     }
 }
