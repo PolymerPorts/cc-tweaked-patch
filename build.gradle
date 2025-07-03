@@ -53,7 +53,7 @@ dependencies {
 	modImplementation include('eu.pb4:factorytools:0.7.1+1.21.6')
 	modImplementation 'eu.pb4:polymer-core:0.13.3+1.21.6'
 	modImplementation 'eu.pb4:polymer-resource-pack:0.13.3+1.21.6'
-	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.13.4-dev+1.21.7'
+	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.13.3+1.21.7'
 	modImplementation 'eu.pb4:polymer-autohost:0.13.3+1.21.6'
 	modImplementation 'eu.pb4:polymer-virtual-entity:0.13.3+1.21.6'
 
