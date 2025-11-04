@@ -11,6 +11,7 @@ import eu.pb4.cctpatch.impl.poly.res.property.TurtleShowElfOverlay;
 import eu.pb4.cctpatch.impl.poly.res.tint.PocketComputerLight;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.TurtleUpgradeModel;
+import eu.pb4.polymer.resourcepack.api.PackResource;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.api.ResourcePackBuilder;
 import eu.pb4.polymer.resourcepack.extras.api.ResourcePackExtras;
@@ -55,10 +56,10 @@ public class ResourcePackGenerator {
     private static void build(ResourcePackBuilder builder) {
         loadData();
 
-        builder.addWriteConverter((path, data) -> {
+        builder.addResourceConverter((path, data) -> {
             try {
                 if (path.startsWith("assets/computercraft/items/pocket_computer_")) {
-                    var asset = ItemAsset.fromJson(new String(data, StandardCharsets.UTF_8));
+                    var asset = ItemAsset.fromJson(data.asString());
                     var replacer = new ItemModel.Replacer[] { null };
                     replacer[0] = (parent, model) -> {
                         if (model instanceof SelectItemModel<?, ?> selectItemModel && selectItemModel.switchValue().property() instanceof PocketComputerStateProperty) {
@@ -76,9 +77,9 @@ public class ResourcePackGenerator {
                         }
                         return model;
                     };
-                    return new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()).toBytes();
+                    return PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()));
                 } else if (path.startsWith("assets/computercraft/items/turtle_")) {
-                    var asset = ItemAsset.fromJson(new String(data, StandardCharsets.UTF_8));
+                    var asset = ItemAsset.fromJson(data.asString());
                     var replacer = new ItemModel.Replacer[] { null };
                     replacer[0] = (parent, model) -> {
                         if (model instanceof ConditionItemModel conditionItemModel && conditionItemModel.property() instanceof TurtleShowElfOverlay) {
@@ -89,13 +90,13 @@ public class ResourcePackGenerator {
                         }
                         return model;
                     };
-                    return new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()).toBytes();
+                    return PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()));
                 }
 
                 if (path.startsWith("assets/computercraft/textures/block/monitor_") && path.endsWith(".png")) {
                     var id = Integer.parseInt(path.split("[_.]")[2]);
                     if (id > 15 && id < 32) {
-                        var image = ImageIO.read(new ByteArrayInputStream(data));
+                        var image = ImageIO.read(data.getStream());
                         for (var x = 0; x < image.getWidth(); x++) {
                             for (var y = 0; y < image.getHeight(); y++) {
                                 if (ColorHelper.getAlpha(image.getRGB(x, y)) == 0) {
@@ -105,7 +106,7 @@ public class ResourcePackGenerator {
                         }
                         var out = new ByteArrayOutputStream();
                         ImageIO.write(image, "png", out);
-                        return out.toByteArray();
+                        return PackResource.of(out.toByteArray());
                     }
                 }
             } catch (Throwable ignored) {

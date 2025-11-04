@@ -8,6 +8,7 @@ import eu.pb4.sgui.api.gui.SimpleGui;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -18,7 +19,7 @@ public class PrinterInventoryGui extends SimpleGui {
         super(ScreenHandlerType.GENERIC_9X3, player, false);
         this.wrapped = printer;
         
-        this.setTitle(Text.empty().append(Text.literal("-0.").setStyle(Style.EMPTY.withFont(PolymerSetup.GUI_FONT).withColor(Formatting.WHITE))).append(ModRegistry.Blocks.PRINTER.get().getName()));
+        this.setTitle(Text.empty().append(Text.literal("-0.").setStyle(Style.EMPTY.withFont(new StyleSpriteSource.Font(PolymerSetup.GUI_FONT)).withColor(Formatting.WHITE))).append(ModRegistry.Blocks.PRINTER.get().getName()));
         this.setSlotRedirect(10, printer.slots.get(0));
 
         for (var i = 0; i < 6; i++) {

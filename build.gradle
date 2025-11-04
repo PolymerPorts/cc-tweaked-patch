@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.10.+'
+	id 'fabric-loom' version '1.12.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 }
@@ -45,22 +45,23 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
-	modImplementation "cc.tweaked:cc-tweaked-1.21.7-fabric:1.116.0"
+	//modImplementation "cc.tweaked:cc-tweaked-1.21.10-fabric:1.116.2"
+	modCompileOnly files("libs/cc-tweaked-1.21.10-fabric-1.116.2-52b127fcc7483674b320a41c5682e733589c7e14.jar")
 
-	modImplementation include('eu.pb4:sgui:1.10.0+1.21.6')
-	modImplementation include('eu.pb4:player-data-api:0.8.0+1.21.6')
-	modImplementation include('eu.pb4:map-canvas-api:0.5.1+1.21.5')
-	modImplementation include('eu.pb4:factorytools:0.7.1+1.21.6')
-	modImplementation 'eu.pb4:polymer-core:0.13.3+1.21.6'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.13.3+1.21.6'
-	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.13.3+1.21.6'
-	modImplementation 'eu.pb4:polymer-autohost:0.13.3+1.21.6'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.13.3+1.21.6'
+	modImplementation include('eu.pb4:sgui:1.11.0+1.21.9')
+	modImplementation include('eu.pb4:player-data-api:0.9.0+1.21.9')
+	modImplementation include('eu.pb4:map-canvas-api:0.6.0+1.21.9')
+	modImplementation include('eu.pb4:factorytools:0.8.2+1.21.10')
+	modImplementation 'eu.pb4:polymer-core:0.14.3+1.21.10'
+	modImplementation 'eu.pb4:polymer-resource-pack:0.14.3+1.21.10'
+	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.14.3+1.21.10'
+	modImplementation 'eu.pb4:polymer-autohost:0.14.3+1.21.10'
+	modImplementation 'eu.pb4:polymer-virtual-entity:0.14.3+1.21.10'
 
 
-	modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {
-		exclude(group: "org.quiltmc", module: "quilt-loader")
-	}
+	//modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {
+	//	exclude(group: "org.quiltmc", module: "quilt-loader")
+	//}
 
 	modImplementation include("nl.theepicblock:resource-locator-api:0.6.1+1.21.4") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'

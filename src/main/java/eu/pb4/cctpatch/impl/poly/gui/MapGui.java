@@ -38,7 +38,7 @@ import net.minecraft.entity.EntityType;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.decoration.DisplayEntity;
 import net.minecraft.entity.passive.HorseEntity;
-import net.minecraft.entity.player.PlayerPosition;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.map.MapDecorationType;
@@ -102,7 +102,7 @@ public class MapGui extends HotbarGui {
         var dir = Direction.NORTH;
         this.canvas = DrawableCanvas.create(5, 3);
         this.zeroPos =  pos.offset(dir).offset(dir.rotateYClockwise(), 2).up();
-        this.virtualDisplay = VirtualDisplay.of(this.canvas, zeroPos, dir, 0, true);
+        this.virtualDisplay = VirtualDisplay.builder(this.canvas, zeroPos, dir).glowing().invisible().build();
         this.renderer = CanvasRenderer.of(new CanvasImage(this.canvas.getWidth(), this.canvas.getHeight()));
         this.renderer.add(new ImageButton(560, 32, GuiTextures.CLOSE_ICON, (a, b, c) -> this.close()));
 
@@ -161,7 +161,7 @@ public class MapGui extends HotbarGui {
     }
 
     public void render() {
-        this.renderer.render(this.player.getWorld().getTime(), this.cursorX / 2, this.cursorY / 2);
+        this.renderer.render(this.player.getEntityWorld().getTime(), this.cursorX / 2, this.cursorY / 2);
         // Debug maps
         if (false && FabricLoader.getInstance().isDevelopmentEnvironment()) {
             for (int x = 0; x < this.canvas.getSectionsWidth(); x++) {
@@ -195,9 +195,9 @@ public class MapGui extends HotbarGui {
         //this.virtualDisplay2.destroy();
         this.canvas.removePlayer(this.player);
         this.canvas.destroy();
-        this.player.getServer().getCommandManager().sendCommandTree(this.player);
+        this.player.getEntityWorld().getServer().getCommandManager().sendCommandTree(this.player);
         this.holder.stopWatching(this.player);
-        var world = this.player.getWorld();
+        var world = this.player.getEntityWorld();
         if (!world.isRaining()) {
             this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.RAIN_STOPPED, 0.0F));
         } else {
@@ -207,7 +207,7 @@ public class MapGui extends HotbarGui {
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.THUNDER_GRADIENT_CHANGED, world.getThunderGradient(1)));        this.player.networkHandler.sendPacket(new SetCameraEntityS2CPacket(this.player));
         this.player.networkHandler.sendPacket(new GameStateChangeS2CPacket(GameStateChangeS2CPacket.GAME_MODE_CHANGED,
                 this.player.interactionManager.getGameMode().getIndex()));
-        this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(this.player.getId(), PlayerPosition.fromEntity(this.player), EnumSet.noneOf(PositionFlag.class)));
+        this.player.networkHandler.sendPacket(new PlayerPositionLookS2CPacket(this.player.getId(), EntityPosition.fromEntity(this.player), EnumSet.noneOf(PositionFlag.class)));
         super.onClose();
     }
 
@@ -360,7 +360,7 @@ public class MapGui extends HotbarGui {
 
         @Override
         public ServerWorld getWorld() {
-            return MapGui.this.getPlayer().getWorld();
+            return MapGui.this.getPlayer().getEntityWorld();
         }
 
         @Override

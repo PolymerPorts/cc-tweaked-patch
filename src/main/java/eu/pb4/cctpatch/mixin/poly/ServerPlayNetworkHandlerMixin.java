@@ -3,7 +3,7 @@ package eu.pb4.cctpatch.mixin.poly;
 import com.llamalad7.mixinextras.injector.v2.WrapWithCondition;
 import eu.pb4.cctpatch.impl.poly.gui.MapGui;
 import eu.pb4.sgui.virtual.VirtualScreenHandlerInterface;
-import net.minecraft.entity.player.PlayerPosition;
+import net.minecraft.entity.EntityPosition;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.message.LastSeenMessageList;
 import net.minecraft.network.message.MessageChain;
@@ -54,7 +54,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     @Inject(method = "onChatMessage", at = @At("HEAD"), cancellable = true)
     private void ccp_onChat(ChatMessageC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
-            this.player.getServer().execute(() -> {
+            this.player.getEntityWorld().getServer().execute(() -> {
                 computerGui.onChatInput(packet.chatMessage());
             });
             ci.cancel();
@@ -82,13 +82,13 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         }
     }
 
-    @WrapWithCondition(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updatePositionAndAngles(DDDFF)V"))
+    @WrapWithCondition(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerPlayerEntity;updatePositionAndAngles(DDDFF)V"))
     private boolean ccp_allowMovement(ServerPlayerEntity instance, double x, double y, double z, float p, float yaw) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             double l = instance.getX() - this.lastTickX;
             double m = instance.getY() - this.lastTickY;
             double n = instance.getZ() - this.lastTickZ;
-            this.player.getWorld().getChunkManager().updatePosition(this.player);
+            this.player.getEntityWorld().getChunkManager().updatePosition(this.player);
             this.player.handleFall(l, m , n, player.isOnGround());
             this.player.setOnGround(player.isOnGround());
             this.syncWithPlayerPosition();
@@ -97,8 +97,8 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
         return true;
     }
 
-    @Inject(method = "requestTeleport(Lnet/minecraft/entity/player/PlayerPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
-    private void ccp_noTeleport(PlayerPosition pos, Set<PositionFlag> flags, CallbackInfo ci) {
+    @Inject(method = "requestTeleport(Lnet/minecraft/entity/EntityPosition;Ljava/util/Set;)V", at = @At("HEAD"), cancellable = true)
+    private void ccp_noTeleport(EntityPosition pos, Set<PositionFlag> flags, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             ci.cancel();
         }
@@ -108,7 +108,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonNetworkH
     private void ccp_onMove(PlayerMoveC2SPacket packet, CallbackInfo ci) {
         if (this.player.currentScreenHandler instanceof VirtualScreenHandlerInterface handler && handler.getGui() instanceof MapGui computerGui) {
             if (packet.getPitch(0) != 0 || packet.getYaw(0) != 0) {
-                this.sendPacket(new PlayerRotationS2CPacket(0, 0));
+                this.sendPacket(new PlayerRotationS2CPacket(0, false, 0, false));
             }
             this.server.execute(() -> {
                 var xRot = packet.getPitch(computerGui.xRot);

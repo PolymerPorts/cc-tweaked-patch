@@ -75,7 +75,7 @@ public class PocketComputerRenderer {
     private int findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
         for (var slot = 0; slot < player.getInventory().size(); slot++) {
             if (player.getInventory().getStack(slot).getItem() instanceof PocketComputerItem
-                    && PocketComputerItem.getServerComputer(player.getServer(), player.getInventory().getStack(slot)) == this.computer) {
+                    && PocketComputerItem.getServerComputer(player.getEntityWorld().getServer(), player.getInventory().getStack(slot)) == this.computer) {
                 if (mut != null) {
                     mut.setValue(player.getInventory().getStack(slot));
                 }
@@ -128,7 +128,7 @@ public class PocketComputerRenderer {
     }
 
     private void drawUpdate() {
-        var image = TerminalExt.of(this.computer).getMiniRenderer().getImage(player.getWorld().getTime());
+        var image = TerminalExt.of(this.computer).getMiniRenderer().getImage(player.getEntityWorld().getTime());
         CanvasUtils.draw(this.canvas, (128 - image.getWidth()) / 2, (128 - image.getHeight()) / 2, image);
     }
 

@@ -1,9 +1,5 @@
 package eu.pb4.cctpatch.impl.compat;
 
-import io.github.theepicblock.polymc.PolyMc;
-import io.github.theepicblock.polymc.api.PolyRegistry;
-import io.github.theepicblock.polymc.api.misc.PolyMapProvider;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.screen.ScreenHandlerType;
 
 import java.util.ArrayList;

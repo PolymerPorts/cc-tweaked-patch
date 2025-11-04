@@ -10,6 +10,7 @@ import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.ServerTask;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Style;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
@@ -21,7 +22,7 @@ public class TurtleInventoryGui extends SimpleGui {
 
         this.wrapped = menu;
         var turtle = (TurtleBlockEntity) menu.getComputer().getLevel().getBlockEntity(menu.getComputer().getPosition());
-        this.setTitle(Text.empty().append(Text.literal("-1.").setStyle(Style.EMPTY.withFont(PolymerSetup.GUI_FONT)
+        this.setTitle(Text.empty().append(Text.literal("-1.").setStyle(Style.EMPTY.withFont(new StyleSpriteSource.Font(PolymerSetup.GUI_FONT))
                 .withFormatting(Formatting.WHITE))).append(turtle.getDisplayName())
         );
 
@@ -46,6 +47,6 @@ public class TurtleInventoryGui extends SimpleGui {
 
     @Override
     public void onClose() {
-        this.player.getServer().send(new ServerTask(this.player.getServer().getTicks(), () -> ComputerGui.open(this.player, this.wrapped)));
+        this.player.getEntityWorld().getServer().send(new ServerTask(this.player.getEntityWorld().getServer().getTicks(), () -> ComputerGui.open(this.player, this.wrapped)));
     }
 }
