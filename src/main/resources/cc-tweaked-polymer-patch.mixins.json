@@ -18,7 +18,7 @@
     "mod.command.CommandComputerCraftMixin",
     "mod.command.ModRegistryArgumentTypesMixin",
     "mod.ext.ServerComputerMixin",
-    "mod.ext.ServerInputStateMixin",
+    "mod.ext.UserComputerInputMixin",
     "mod.ext.ServerMonitorMixin",
     "mod.ext.TerminalMixin",
     "mod.item.ModRegistryCreativeTabsMixin",

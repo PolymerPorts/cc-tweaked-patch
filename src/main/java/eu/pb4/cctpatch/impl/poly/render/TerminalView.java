@@ -49,9 +49,9 @@ public final class TerminalView extends ScreenElement {
         int ly = y / terminal.fontHeight() + 1;
 
         if (type == ClickType.RIGHT_DOWN) {
-            this.inputState.mouseClick(0, lx, ly);
+            this.inputState.getComputerInput().mouseClick(0, lx, ly);
         } else if (type == ClickType.LEFT_DOWN) {
-            this.inputState.mouseClick(1, lx, ly);
+            this.inputState.getComputerInput().mouseClick(1, lx, ly);
         }
     }
 }

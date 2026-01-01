@@ -1,5 +1,7 @@
 package eu.pb4.cctpatch.impl.poly;
 
+import dan200.computercraft.shared.computer.core.ServerContext;
+import dan200.computercraft.shared.computer.items.ServerComputerReference;
 import dan200.computercraft.shared.pocket.core.PocketServerComputer;
 import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import eu.pb4.cctpatch.impl.config.PatchConfig;
@@ -75,7 +77,7 @@ public class PocketComputerRenderer {
     private int findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
         for (var slot = 0; slot < player.getInventory().size(); slot++) {
             if (player.getInventory().getStack(slot).getItem() instanceof PocketComputerItem
-                    && PocketComputerItem.getServerComputer(player.getEntityWorld().getServer(), player.getInventory().getStack(slot)) == this.computer) {
+                    && ServerComputerReference.get(player.getInventory().getStack(slot), ServerContext.get(player.getEntityWorld().getServer()).registry()) == this.computer) {
                 if (mut != null) {
                     mut.setValue(player.getInventory().getStack(slot));
                 }

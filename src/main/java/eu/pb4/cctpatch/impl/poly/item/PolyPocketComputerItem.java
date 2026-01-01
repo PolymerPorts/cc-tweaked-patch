@@ -1,6 +1,9 @@
 package eu.pb4.cctpatch.impl.poly.item;
 
 import dan200.computercraft.shared.computer.core.ComputerState;
+import dan200.computercraft.shared.computer.core.ServerContext;
+import dan200.computercraft.shared.computer.items.ServerComputerReference;
+import dan200.computercraft.shared.pocket.core.PocketServerComputer;
 import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
 import eu.pb4.cctpatch.impl.poly.ext.ServerComputerExt;
@@ -24,7 +27,7 @@ public record PolyPocketComputerItem() implements PolymerItem {
 
     @Override
     public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
-        var computer = ComputerCraftPolymerPatch.server != null ? PocketComputerItem.getServerComputer(ComputerCraftPolymerPatch.server, stack) : null;
+        var computer = ComputerCraftPolymerPatch.server != null && ServerComputerReference.get(stack, ServerContext.get(ComputerCraftPolymerPatch.server).registry()) instanceof PocketServerComputer x ? x : null;
 
         out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(List.of(), List.of(),
                 List.of(computer != null ? computer.getState().asString() : ComputerState.OFF.asString()),

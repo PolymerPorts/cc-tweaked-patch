@@ -2,7 +2,7 @@ package eu.pb4.cctpatch.impl.poly.render;
 
 import com.google.common.base.Supplier;
 import eu.pb4.cctpatch.impl.poly.Keys;
-import eu.pb4.cctpatch.impl.poly.ext.ServerInputStateExt;
+import eu.pb4.cctpatch.impl.poly.ext.ComputerInputExt;
 import eu.pb4.cctpatch.impl.poly.gui.ComputerGui;
 import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
@@ -90,7 +90,7 @@ public class KeyboardView extends ScreenElement {
     public void render(DrawableCanvas canvas, long tick, int mouseX, int mouseY) {
         int buttonCollisionHeight = 16;
         int y = 0;
-        var inputExt = ServerInputStateExt.of(this.gui.input);
+        var inputExt = ComputerInputExt.of(this.gui.input.getComputerInput());
         for (int l = 0; l < KEYS.length; l++) {
             int x = 0;//(KEYBOARD_WIDTH - LINE_WIDTH[l]) / 2;
             for (var key : KEYS[l]) {
@@ -180,7 +180,7 @@ public class KeyboardView extends ScreenElement {
     @Override
     public void click(int x, int y, ClickType type) {
         var height = KEYS.length;
-        var inputExt = ServerInputStateExt.of(this.gui.input);
+        var inputExt = ComputerInputExt.of(this.gui.input.getComputerInput());
         for (int ly = 0; ly < height; ly++) {
             var lys = ly * 16;
             if (lys <= y && lys + 16 > y) {
@@ -190,15 +190,15 @@ public class KeyboardView extends ScreenElement {
                         var id = key.key();
                         if (inputExt.isKeyDown(id)) {
                             if (type == ClickType.LEFT_DOWN) {
-                                this.gui.input.keyUp(id);
+                                this.gui.input.getComputerInput().keyUp(id);
                             }
                         } else {
-                            this.gui.input.keyDown(id, type == ClickType.RIGHT_DOWN);
+                            this.gui.input.getComputerInput().keyDown(id, type == ClickType.RIGHT_DOWN);
                             var shift = inputExt.isKeyDown(Keys.LEFT_SHIFT) || inputExt.isKeyDown(Keys.RIGHT_SHIFT);
                             var character = shift || inputExt.isKeyDown(Keys.CAPS_LOCK)
                                 ? key.upperCase() : key.lowerCase();
                             if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
-                                this.gui.input.charTyped((byte) character);
+                                this.gui.input.getComputerInput().charTyped((byte) character);
                             }
 
                             if (type == ClickType.LEFT_DOWN) {

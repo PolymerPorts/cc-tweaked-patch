@@ -55,7 +55,7 @@ public class TurtleModel extends BlockModel {
     public TurtleModel(BlockState state, BlockPos pos) {
         this.lastPos = Vec3d.ofCenter(pos);
         this.baseYaw = state.get(TurtleBlock.FACING).getPositiveHorizontalDegrees();
-        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem()));
+        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getSolidModel(state.getBlock().asItem()));
         this.base.setTeleportDuration(1);
         this.base.setItemDisplayContext(ItemDisplayContext.NONE);
         this.base.setYaw(this.baseYaw);
@@ -131,7 +131,7 @@ public class TurtleModel extends BlockModel {
         if (this.color != turtleBrain.getColour()) {
             this.color = turtleBrain.getColour();
             if (this.color == -1) {
-                this.base.setItem(ItemDisplayElementUtil.getModel(this.blockState().getBlock().asItem()));
+                this.base.setItem(ItemDisplayElementUtil.getSolidModel(this.blockState().getBlock().asItem()));
             } else {
                 var model = COLORED_TURTLE_MODEL.copy();
                 model.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(this.color));
@@ -148,12 +148,12 @@ public class TurtleModel extends BlockModel {
 
             if ((this.overlayId != null && overlay == null) || (turtleBrain.getOverlay() != null && !turtleBrain.getOverlay().equals(this.overlayId))) {
                 this.overlayId = overlay != null ? turtleBrain.getOverlay() : null;
-                this.overlay.setItem(overlay == null ? ItemStack.EMPTY : ItemDisplayElementUtil.getModel(overlay.model()));
+                this.overlay.setItem(overlay == null ? ItemStack.EMPTY : ItemDisplayElementUtil.getSolidModel(overlay.model()));
             }
 
             if (!Objects.equals(overlay2, this.overlayId2)) {
                 this.overlayId2 = overlay2;
-                this.overlay.setItem(ItemDisplayElementUtil.getModel(overlay2));
+                this.overlay.setItem(ItemDisplayElementUtil.getSolidModel(overlay2));
             }
         }
 

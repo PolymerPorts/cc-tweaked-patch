@@ -136,7 +136,7 @@ public class ResourcePackGenerator {
                     throwable.printStackTrace();
                 }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
 
         }
     }

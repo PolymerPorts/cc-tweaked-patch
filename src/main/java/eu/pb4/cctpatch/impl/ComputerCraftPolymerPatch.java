@@ -15,6 +15,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spongepowered.asm.mixin.MixinEnvironment;
 
 public class ComputerCraftPolymerPatch implements ModInitializer {
 	public static final String MOD_ID = "cc-tweaked-polymer-patch";
@@ -23,6 +24,7 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		//MixinEnvironment.getCurrentEnvironment().audit();
 		Fonts.TERMINAL_FONT.hashCode();
 		GuiTextures.ADVANCED_COMPUTER.hashCode();
 		PatchConfig.instance.hashCode();

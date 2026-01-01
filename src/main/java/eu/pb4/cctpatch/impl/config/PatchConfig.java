@@ -16,6 +16,9 @@ public final class PatchConfig {
     @SerializedName("display_pocket_computer_screen_in_hand")
     public boolean displayPocketComputerScreenInHand = true;
 
+    @SerializedName("enable_api_and_program_extensions")
+    public boolean enableApiAndProgramExtensions = true;
+
     public static PatchConfig loadOrCreateConfig() {
         try {
             PatchConfig config;

@@ -2,10 +2,10 @@ package eu.pb4.cctpatch.impl.poly.gui;
 
 import dan200.computercraft.shared.computer.core.ServerComputer;
 import dan200.computercraft.shared.computer.inventory.AbstractComputerMenu;
-import dan200.computercraft.shared.computer.menu.ServerInputState;
+import dan200.computercraft.shared.computer.menu.ServerInputHandler;
 import dan200.computercraft.shared.turtle.inventory.TurtleMenu;
 import eu.pb4.cctpatch.impl.poly.Keys;
-import eu.pb4.cctpatch.impl.poly.ext.ServerInputStateExt;
+import eu.pb4.cctpatch.impl.poly.ext.ComputerInputExt;
 import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
 import eu.pb4.cctpatch.impl.poly.render.*;
 import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
@@ -116,7 +116,7 @@ public final class ComputerGui extends MapGui {
 
     public final ImageButton closeButton;
     public final ImageButton terminateButton;
-    public final ServerInputState<AbstractComputerMenu> input;
+    public final ServerInputHandler input;
     public final KeyboardView keyboard;
     public final AbstractComputerMenu wrapped;
     private final ServerComputer computer;
@@ -129,7 +129,7 @@ public final class ComputerGui extends MapGui {
         super(player);
         this.wrapped = menu;
         //noinspection unchecked
-        this.input = (ServerInputState<AbstractComputerMenu>) wrapped.getInput();
+        this.input = wrapped.getInput();
         this.computer = wrapped.getComputer();
 
         {
@@ -311,7 +311,7 @@ public final class ComputerGui extends MapGui {
             }
 
             for (int a = 0; a < i; a++) {
-                gui.input.keyDown(key, false);
+                gui.input.getComputerInput().keyDown(key, false);
             }
             gui.keysToReleaseNextTick.add(key);
         };
@@ -319,10 +319,10 @@ public final class ComputerGui extends MapGui {
 
     private static BiConsumer<ComputerGui, String> holdKey(int key) {
         return (gui, arg) -> {
-            if (!ServerInputStateExt.of(gui.input).isKeyDown(key)) {
-                gui.input.keyDown(key, true);
+            if (!ComputerInputExt.of(gui.input.getComputerInput()).isKeyDown(key)) {
+                gui.input.getComputerInput().keyDown(key, true);
             } else {
-                gui.input.keyUp(key);
+                gui.input.getComputerInput().keyUp(key);
             }
         };
     }
@@ -332,32 +332,32 @@ public final class ComputerGui extends MapGui {
         super.onPlayerInput(input);
         
         if (this.previousInput.right() != input.right()) {
-            if (input.right()) this.input.keyDown(Keys.RIGHT, false);
-            else this.input.keyUp(Keys.RIGHT);
+            if (input.right()) this.input.getComputerInput().keyDown(Keys.RIGHT, false);
+            else this.input.getComputerInput().keyUp(Keys.RIGHT);
         }
         if (this.previousInput.left() != input.left()) {
-            if (input.left()) this.input.keyDown(Keys.LEFT, false);
-            else this.input.keyUp(Keys.LEFT);
+            if (input.left()) this.input.getComputerInput().keyDown(Keys.LEFT, false);
+            else this.input.getComputerInput().keyUp(Keys.LEFT);
         }
         if (this.previousInput.forward() != input.forward()) {
-            if (input.forward()) this.input.keyDown(Keys.UP, false);
-            else this.input.keyUp(Keys.UP);
+            if (input.forward()) this.input.getComputerInput().keyDown(Keys.UP, false);
+            else this.input.getComputerInput().keyUp(Keys.UP);
         }
         if (this.previousInput.backward() != input.backward()) {
-            if (input.backward()) this.input.keyDown(Keys.DOWN, false);
-            else this.input.keyUp(Keys.DOWN);
+            if (input.backward()) this.input.getComputerInput().keyDown(Keys.DOWN, false);
+            else this.input.getComputerInput().keyUp(Keys.DOWN);
         }
         if (this.previousInput.jump() != input.jump()) {
-            if (input.jump()) this.input.keyDown(Keys.ENTER, false);
-            else this.input.keyUp(Keys.ENTER);
+            if (input.jump()) this.input.getComputerInput().keyDown(Keys.ENTER, false);
+            else this.input.getComputerInput().keyUp(Keys.ENTER);
         }
         if (this.previousInput.sneak() != input.sneak()) {
-            if (input.sneak()) this.input.keyDown(Keys.LEFT_SHIFT, false);
-            else this.input.keyUp(Keys.LEFT_SHIFT);
+            if (input.sneak()) this.input.getComputerInput().keyDown(Keys.LEFT_SHIFT, false);
+            else this.input.getComputerInput().keyUp(Keys.LEFT_SHIFT);
         }
         if (this.previousInput.sprint() != input.sprint()) {
-            if (input.sprint()) this.input.keyDown(Keys.LEFT_CONTROL, false);
-            else this.input.keyUp(Keys.LEFT_CONTROL);
+            if (input.sprint()) this.input.getComputerInput().keyDown(Keys.LEFT_CONTROL, false);
+            else this.input.getComputerInput().keyUp(Keys.LEFT_CONTROL);
         }
         
         this.previousInput = input;
@@ -383,7 +383,7 @@ public final class ComputerGui extends MapGui {
         }
 
         for (var key : this.keysToReleaseNextTick) {
-            this.input.keyUp(key);
+            this.input.getComputerInput().keyUp(key);
         }
         this.keysToReleaseNextTick.clear();
     }
@@ -409,20 +409,20 @@ public final class ComputerGui extends MapGui {
             if (!message.startsWith("/")) {
                 for (var character : message.codePoints().toArray()) {
                     if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
-                        this.input.charTyped((byte) character);
+                        this.input.getComputerInput().charTyped((byte) character);
                     }
                 }
 
             }
 
-            this.input.keyDown(Keys.ENTER, false);
+            this.input.getComputerInput().keyDown(Keys.ENTER, false);
             this.keysToReleaseNextTick.add(Keys.ENTER);
             this.currentInput = "";
         }
     }
 
     public void onCommandInput(String command) {
-        this.input.keyDown(Keys.ENTER, false);
+        this.input.getComputerInput().keyDown(Keys.ENTER, false);
         this.keysToReleaseNextTick.add(Keys.ENTER);
         this.currentInput = "";
     }
@@ -446,14 +446,14 @@ public final class ComputerGui extends MapGui {
                 }
             }
 
-            var inputExt = ServerInputStateExt.of(this.input);
+            var inputExt = ComputerInputExt.of(this.input.getComputerInput());
 
             for (var tmp = i; tmp < old.length(); tmp++) {
                 if (!this.keysToReleaseNextTick.contains(Keys.BACKSPACE) && !inputExt.isKeyDown(Keys.BACKSPACE)) {
-                    this.input.keyDown(Keys.BACKSPACE, false);
+                    this.input.getComputerInput().keyDown(Keys.BACKSPACE, false);
                     this.keysToReleaseNextTick.add(Keys.BACKSPACE);
                 } else {
-                    this.input.keyDown(Keys.BACKSPACE, false);
+                    this.input.getComputerInput().keyDown(Keys.BACKSPACE, false);
                 }
             }
 
@@ -469,19 +469,19 @@ public final class ComputerGui extends MapGui {
         if (character >= 32 && character <= 126 || character >= 160 && character <= 255) {
             var key = KeyboardView.CHAR_TO_KEY.get(character);
             if (key != null) {
-                this.input.keyDown(key.key(), false);
+                this.input.getComputerInput().keyDown(key.key(), false);
                 this.keysToReleaseNextTick.add(key.key());
             }
 
             if (key.upperCase() == character && key.lowerCase() != character) {
-                if (!this.keysToReleaseNextTick.contains(Keys.LEFT_SHIFT) && !ServerInputStateExt.of(this.input).isKeyDown(Keys.LEFT_SHIFT)) {
-                    this.input.keyDown(Keys.LEFT_SHIFT, false);
+                if (!this.keysToReleaseNextTick.contains(Keys.LEFT_SHIFT) && !ComputerInputExt.of(this.input.getComputerInput()).isKeyDown(Keys.LEFT_SHIFT)) {
+                    this.input.getComputerInput().keyDown(Keys.LEFT_SHIFT, false);
 
                     this.keysToReleaseNextTick.add(Keys.LEFT_SHIFT);
                 }
             }
 
-            this.input.charTyped((byte) character);
+            this.input.getComputerInput().charTyped((byte) character);
         }
     }
 
