@@ -7,7 +7,7 @@ package eu.pb4.cctpatch.impl.poly.res;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dan200.computercraft.api.ComputerCraftAPI;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 
 
 public record TurtleOverlay(Identifier model, boolean showElfOverlay) {
@@ -18,5 +18,5 @@ public record TurtleOverlay(Identifier model, boolean showElfOverlay) {
         Codec.BOOL.optionalFieldOf("show_elf_overlay", false).forGetter(TurtleOverlay::showElfOverlay)
     ).apply(instance, TurtleOverlay::new));
 
-    public static final Identifier ELF_MODEL = Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
+    public static final Identifier ELF_MODEL = Identifier.fromNamespaceAndPath(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
 }

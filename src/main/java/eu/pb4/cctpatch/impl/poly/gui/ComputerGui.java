@@ -12,30 +12,30 @@ import eu.pb4.cctpatch.impl.poly.textures.GuiTextures;
 import eu.pb4.cctpatch.impl.poly.textures.RepeatingCanvas;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.network.packet.s2c.play.ChatSuggestionsS2CPacket;
-import net.minecraft.network.packet.s2c.play.GameMessageS2CPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.PlayerInput;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundCustomChatCompletionsPacket;
+import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 
 public final class ComputerGui extends MapGui {
 
-    private static final Packet<ClientPlayPacketListener> ADDITIONAL_SUGGESTIONS_PACKET;
-    private static final Packet<ClientPlayPacketListener> ADDITIONAL_SUGGESTIONS_REMOVE_PACKET;
+    private static final Packet<ClientGamePacketListener> ADDITIONAL_SUGGESTIONS_PACKET;
+    private static final Packet<ClientGamePacketListener> ADDITIONAL_SUGGESTIONS_REMOVE_PACKET;
 
     private static final Map<String, BiConsumer<ComputerGui, String>> ACTIONS = new HashMap<>();
 
@@ -95,9 +95,9 @@ public final class ComputerGui extends MapGui {
                 var args = arg.split(" ");
                 double z = args.length > 0 && !args[0].isEmpty() ? Math.min(Math.max(Double.parseDouble(args[0]), 1), 8) : 1;
                 double x = args.length > 1 && !args[1].isEmpty() ? Math.min(Math.max(Double.parseDouble(args[1]), -8), 8) : 0;
-                gui.setDistance(new Vec3d(x, 0, z));
+                gui.setDistance(new Vec3(x, 0, z));
             } catch (Exception e) {
-                gui.player.networkHandler.sendPacket(new GameMessageS2CPacket(Text.empty(), true));
+                gui.player.connection.send(new ClientboundSystemChatPacket(Component.empty(), true));
             }
         });
 
@@ -106,11 +106,11 @@ public final class ComputerGui extends MapGui {
 
         var list = ACTIONS.keySet().stream().map(x -> ";" + x).collect(Collectors.toList());
 
-        ADDITIONAL_SUGGESTIONS_PACKET = new ChatSuggestionsS2CPacket(
-                ChatSuggestionsS2CPacket.Action.ADD, list
+        ADDITIONAL_SUGGESTIONS_PACKET = new ClientboundCustomChatCompletionsPacket(
+                ClientboundCustomChatCompletionsPacket.Action.ADD, list
         );
-        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ChatSuggestionsS2CPacket(
-                ChatSuggestionsS2CPacket.Action.REMOVE, list
+        ADDITIONAL_SUGGESTIONS_REMOVE_PACKET = new ClientboundCustomChatCompletionsPacket(
+                ClientboundCustomChatCompletionsPacket.Action.REMOVE, list
         );
     }
 
@@ -123,9 +123,9 @@ public final class ComputerGui extends MapGui {
     public String currentInput = "";
     public final IntSet keysToReleaseNextTick = new IntArraySet();
 
-    private PlayerInput previousInput = PlayerInput.DEFAULT;
+    private Input previousInput = Input.EMPTY;
 
-    public ComputerGui(ServerPlayerEntity player, AbstractComputerMenu menu) {
+    public ComputerGui(ServerPlayer player, AbstractComputerMenu menu) {
         super(player);
         this.wrapped = menu;
         //noinspection unchecked
@@ -286,7 +286,7 @@ public final class ComputerGui extends MapGui {
         this.render();
 
 
-        player.networkHandler.sendPacket(ADDITIONAL_SUGGESTIONS_PACKET);
+        player.connection.send(ADDITIONAL_SUGGESTIONS_PACKET);
 
         for (int i = 0; i < 9; i++) {
             this.setSlot(i, new ItemStack(Items.STICK));
@@ -295,8 +295,8 @@ public final class ComputerGui extends MapGui {
         this.open();
     }
 
-    public static void open(ServerPlayerEntity player, AbstractComputerMenu menu) {
-        if (player.isOnGround()) {
+    public static void open(ServerPlayer player, AbstractComputerMenu menu) {
+        if (player.onGround()) {
             new ComputerGui(player, menu);
         }
     }
@@ -328,7 +328,7 @@ public final class ComputerGui extends MapGui {
     }
 
     @Override
-    public void onPlayerInput(PlayerInput input) {
+    public void onPlayerInput(Input input) {
         super.onPlayerInput(input);
         
         if (this.previousInput.right() != input.right()) {
@@ -351,8 +351,8 @@ public final class ComputerGui extends MapGui {
             if (input.jump()) this.input.getComputerInput().keyDown(Keys.ENTER, false);
             else this.input.getComputerInput().keyUp(Keys.ENTER);
         }
-        if (this.previousInput.sneak() != input.sneak()) {
-            if (input.sneak()) this.input.getComputerInput().keyDown(Keys.LEFT_SHIFT, false);
+        if (this.previousInput.shift() != input.shift()) {
+            if (input.shift()) this.input.getComputerInput().keyDown(Keys.LEFT_SHIFT, false);
             else this.input.getComputerInput().keyUp(Keys.LEFT_SHIFT);
         }
         if (this.previousInput.sprint() != input.sprint()) {
@@ -375,7 +375,7 @@ public final class ComputerGui extends MapGui {
 
     @Override
     public void onTick() {
-        if (this.wrapped.canUse(this.player)) {
+        if (this.wrapped.stillValid(this.player)) {
             this.render();
             super.onTick();
         } else {
@@ -389,10 +389,10 @@ public final class ComputerGui extends MapGui {
     }
 
     @Override
-    public void onClose() {
-        this.player.networkHandler.sendPacket(ADDITIONAL_SUGGESTIONS_REMOVE_PACKET);
+    public void afterRemoval() {
+        this.player.connection.send(ADDITIONAL_SUGGESTIONS_REMOVE_PACKET);
 
-        super.onClose();
+        super.afterRemoval();
     }
 
     public void onChatInput(String message) {
@@ -485,13 +485,8 @@ public final class ComputerGui extends MapGui {
         }
     }
 
-    @Override
-    public boolean onClickEntity(int entityId, EntityInteraction type, boolean isSneaking, @Nullable Vec3d interactionPos) {
-        return super.onClickEntity(entityId, type, isSneaking, interactionPos);
-    }
-
-    public void onPlayerAction(PlayerActionC2SPacket.Action action, Direction direction, BlockPos pos) {
-        if (action == PlayerActionC2SPacket.Action.DROP_ALL_ITEMS) {
+    public void onPlayerAction(ServerboundPlayerActionPacket.Action action, Direction direction, BlockPos pos) {
+        if (action == ServerboundPlayerActionPacket.Action.DROP_ALL_ITEMS) {
             this.close();
         }
     }

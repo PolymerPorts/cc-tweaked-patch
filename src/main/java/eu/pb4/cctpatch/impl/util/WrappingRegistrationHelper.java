@@ -2,12 +2,11 @@ package eu.pb4.cctpatch.impl.util;
 
 import dan200.computercraft.shared.platform.RegistrationHelper;
 import dan200.computercraft.shared.platform.RegistryEntry;
-import net.minecraft.util.Identifier;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import net.minecraft.resources.Identifier;
 
 public record WrappingRegistrationHelper<T>(RegistrationHelper<T> original, BiConsumer<Identifier, T> consumer, List<RegistryEntry<T>> entries) implements RegistrationHelper<T> {
     public WrappingRegistrationHelper(RegistrationHelper<T> original, BiConsumer<Identifier, T> consumer) {

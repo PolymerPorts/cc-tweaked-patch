@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version '1.15.+'
+	id 'net.fabricmc.fabric-loom' version '1.15.+'
 	id 'maven-publish'
 	id "com.modrinth.minotaur" version "2.+"
 }
@@ -39,38 +39,36 @@ repositories {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	modImplementation "cc.tweaked:cc-tweaked-1.21.11-fabric:1.117.1"
-	//modCompileOnly files("libs/cc-tweaked-1.21.11-fabric-1.117.0-23985ef41f182e3b89fa6453fb408b4bc41c3594.jar")
+	implementation "cc.tweaked:cc-tweaked-26.1.2-fabric:1.118.0"
 
-	modImplementation include('eu.pb4:sgui:1.12.0+1.21.11')
-	modImplementation include('eu.pb4:player-data-api:0.9.1+1.21.11')
-	modImplementation include('eu.pb4:map-canvas-api:0.7.0+1.21.11')
-	modImplementation include('eu.pb4:factorytools:0.9.5+1.21.11')
-	modImplementation 'eu.pb4:polymer-core:0.15.2+1.21.11'
-	modImplementation 'eu.pb4:polymer-resource-pack:0.15.2+1.21.11'
-	modImplementation 'eu.pb4:polymer-resource-pack-extras:0.15.2+1.21.11'
-	modImplementation 'eu.pb4:polymer-autohost:0.15.2+1.21.11'
-	modImplementation 'eu.pb4:polymer-virtual-entity:0.15.2+1.21.11'
+	implementation include('eu.pb4:sgui:2.0.0+26.1')
+	implementation include('eu.pb4:player-data-api:0.10.0+26.1')
+	implementation include('eu.pb4:map-canvas-api:0.8.0+26.1')
+	implementation include('eu.pb4:factorytools:0.10.0+26.1')
+	implementation 'eu.pb4:polymer-core:0.16.3+26.1.2'
+	implementation 'eu.pb4:polymer-resource-pack:0.16.3+26.1.2'
+	implementation 'eu.pb4:polymer-resource-pack-extras:0.16.3+26.1.2'
+	implementation 'eu.pb4:polymer-autohost:0.16.3+26.1.2'
+	implementation 'eu.pb4:polymer-virtual-entity:0.16.3+26.1.2'
 
 
 	//modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {
 	//	exclude(group: "org.quiltmc", module: "quilt-loader")
 	//}
 
-	modImplementation include("nl.theepicblock:resource-locator-api:0.6.3+1.21.11") {
+	implementation include("nl.theepicblock:resource-locator-api:0.7.0-patbox+26.1") {
 		exclude group: 'net.fabricmc', module: 'fabric-loader'
 	}
 
 	// Uncomment the following line to enable the deprecated Fabric API modules. 
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 
-	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
+	// implementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 }
 
 processResources {
@@ -82,7 +80,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 25
 }
 
 java {
@@ -91,8 +89,8 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 jar {
@@ -124,10 +122,10 @@ if (System.getenv("MODRINTH")) {
 		projectId = 'MfXTuV8J'// The ID of your modrinth project, slugs will not work.
 		versionNumber = "" + version // The version of the mod to upload.
 		versionType = "beta"
-		uploadFile = remapJar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
+		uploadFile = jar // This links to a task that builds your mod jar and sets "uploadFile" to the mod jar.
 		gameVersions = [((String) project.minecraft_version)]
 		changelog = System.getenv("CHANGELOG")
-		loaders = ["fabric"/*, "quilt"*/]
+		loaders = ["fabric"]
 
 		dependencies {
 			required.project "cc-tweaked"
@@ -135,7 +133,7 @@ if (System.getenv("MODRINTH")) {
 		}
 	}
 
-	remapJar {
+	jar {
 		finalizedBy project.tasks.modrinth
 	}
 }

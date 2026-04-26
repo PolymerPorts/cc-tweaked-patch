@@ -5,10 +5,9 @@ import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockAwareAttachment;
 import eu.pb4.polymer.virtualentity.api.attachment.BlockBoundAttachment;
-import net.minecraft.block.BlockState;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -21,16 +20,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class TurtleBrainMixin {
     @Shadow public abstract BlockPos getPosition();
 
-    @Shadow public abstract World getLevel();
+    @Shadow public abstract Level getLevel();
 
     @Unique
     private TurtleModel model;
 
-    @Inject(method = "teleportTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;I)Z"))
-    private void shiftModelPosition(World world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "teleportTo", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"))
+    private void shiftModelPosition(Level world, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         if (this.model != null) {
             var old = this.model.getAttachment();
-            BlockBoundAttachment.of(this.model, (ServerWorld) world, pos, BlockAwareAttachment.get(this.model).getBlockState());
+            BlockBoundAttachment.of(this.model, (ServerLevel) world, pos, BlockAwareAttachment.get(this.model).getBlockState());
             old.destroy();
         }
     }

@@ -17,19 +17,16 @@
 	"entrypoints": {
 		"main": [
           "eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch"
-		],
-		"polymc": [
-			"eu.pb4.cctpatch.impl.compat.PolyMcEntrypoint"
 		]
 	},
 	"mixins": [
       "cc-tweaked-polymer-patch.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.10",
-		"computercraft": ">=1.113.0",
-		"minecraft": ">=1.21-",
-		"java": ">=21",
+		"fabricloader": ">=0.18.0",
+		"computercraft": ">=1.118.0",
+		"minecraft": ">=26.1-",
+		"java": ">=25",
 		"fabric-api": "*"
 	}
 }

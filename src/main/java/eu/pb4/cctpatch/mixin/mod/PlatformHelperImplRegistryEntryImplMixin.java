@@ -6,12 +6,12 @@ import eu.pb4.cctpatch.impl.poly.item.PolyBaseItem;
 import eu.pb4.cctpatch.impl.poly.item.PolyPocketComputerItem;
 import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
-import eu.pb4.polymer.core.api.other.PolymerScreenHandlerUtils;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.screen.ScreenHandlerType;
+import eu.pb4.polymer.core.api.other.PolymerMenuUtils;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -25,14 +25,14 @@ public class PlatformHelperImplRegistryEntryImplMixin {
     @Nullable
     private Object instance;
 
-    @Inject(method = "register(Lnet/minecraft/registry/Registry;)V", at = @At("TAIL"))
+    @Inject(method = "register(Lnet/minecraft/core/Registry;)V", at = @At("TAIL"))
     private void onRegister(Registry<?> registry, CallbackInfo ci) {
-        if (registry == Registries.BLOCK_ENTITY_TYPE) {
+        if (registry == BuiltInRegistries.BLOCK_ENTITY_TYPE) {
             PolymerBlockUtils.registerBlockEntity((BlockEntityType<?>) this.instance);
-        } else if (registry == Registries.SCREEN_HANDLER) {
-            PolymerScreenHandlerUtils.registerType((ScreenHandlerType<?>) this.instance);
-            PolyMcUtils.addScreenHandlerBypass((ScreenHandlerType<?>) this.instance);
-        } else if (registry == Registries.ITEM) {
+        } else if (registry == BuiltInRegistries.MENU) {
+            PolymerMenuUtils.registerType((MenuType<?>) this.instance);
+            PolyMcUtils.addScreenHandlerBypass((MenuType<?>) this.instance);
+        } else if (registry == BuiltInRegistries.ITEM) {
             PolymerItem polymerItem;
 
             if (this.instance instanceof PocketComputerItem) {

@@ -9,15 +9,17 @@ import eu.pb4.cctpatch.impl.ComputerCraftPolymerPatch;
 import eu.pb4.cctpatch.impl.poly.ext.ServerComputerExt;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.CustomModelDataComponent;
-import net.minecraft.component.type.MapIdComponent;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import xyz.nucleoid.packettweaker.PacketContext;
 
 import java.util.List;
+
+import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.level.saveddata.maps.MapId;
 
 public record PolyPocketComputerItem() implements PolymerItem {
     @Override
@@ -26,17 +28,17 @@ public record PolyPocketComputerItem() implements PolymerItem {
     }
 
     @Override
-    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context) {
+    public void modifyBasePolymerItemStack(ItemStack out, ItemStack stack, PacketContext context, HolderLookup.Provider provider) {
         var computer = ComputerCraftPolymerPatch.server != null && ServerComputerReference.get(stack, ServerContext.get(ComputerCraftPolymerPatch.server).registry()) instanceof PocketServerComputer x ? x : null;
 
-        out.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(List.of(), List.of(),
-                List.of(computer != null ? computer.getState().asString() : ComputerState.OFF.asString()),
+        out.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(),
+                List.of(computer != null ? computer.getState().getSerializedName() : ComputerState.OFF.getSerializedName()),
                 computer != null ? IntList.of(computer.getBrain().getLight()) : IntList.of()));
 
         if (ComputerCraftPolymerPatch.server != null && computer != null) {
             var mapId = ServerComputerExt.of(computer).getMapId();
             if (mapId < 0) {
-                out.set(DataComponentTypes.MAP_ID, new MapIdComponent(mapId));
+                out.set(DataComponents.MAP_ID, new MapId(mapId));
             }
         }
     }

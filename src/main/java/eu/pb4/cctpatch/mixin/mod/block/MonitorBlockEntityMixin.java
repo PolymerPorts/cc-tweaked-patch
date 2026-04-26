@@ -13,18 +13,6 @@ import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.core.PlayerCanvas;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 import eu.pb4.mapcanvas.api.utils.VirtualDisplay;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
-import net.minecraft.util.BlockRotation;
-import net.minecraft.util.ClickType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -38,6 +26,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.level.block.Rotation;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
 
 @Mixin(MonitorBlockEntity.class)
 public abstract class MonitorBlockEntityMixin extends BlockEntity {
@@ -59,7 +57,7 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
     @Unique
     private VirtualDisplay display = null;
     @Unique
-    private final Set<ServerPlayerEntity> currentWatchers = new HashSet<>();
+    private final Set<ServerPlayer> currentWatchers = new HashSet<>();
 
     public MonitorBlockEntityMixin(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -70,7 +68,7 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
         this.updateDisplaySize();
     }
 
-    @Inject(method = "markRemoved", at = @At("TAIL"))
+    @Inject(method = "setRemoved", at = @At("TAIL"))
     private void onRemoved(CallbackInfo ci) {
         if (this.display != null) {
             this.display.destroy();
@@ -81,9 +79,9 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
         }
     }
 
-    @Inject(method = "readData", at = @At("TAIL"))
-    private void onReadNbt(ReadView nbt, CallbackInfo ci) {
-        if (world != null) {
+    @Inject(method = "loadAdditional", at = @At("TAIL"))
+    private void onReadNbt(ValueInput nbt, CallbackInfo ci) {
+        if (level != null) {
             this.updateDisplaySize();
         }
     }
@@ -124,8 +122,8 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
         this.currentWatchers.clear();
 
         if (this.xIndex == 0 && this.yIndex == 0) {
-            var facing = this.getCachedState().get(MonitorBlock.FACING);
-            var orientation = this.getCachedState().get(MonitorBlock.ORIENTATION);
+            var facing = this.getBlockState().getValue(MonitorBlock.FACING);
+            var orientation = this.getBlockState().getValue(MonitorBlock.ORIENTATION);
 
             int rotation;
             Direction dir;
@@ -134,24 +132,24 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
             if (orientation == Direction.NORTH) {
                 rotation = 0;
                 dir = facing;
-                blockPos = this.getPos().offset(dir).up(this.getHeight() - 1);
+                blockPos = this.getBlockPos().relative(dir).above(this.getHeight() - 1);
             } else {
                 dir = orientation;
-                rotation = facing.getHorizontalQuarterTurns();
-                blockPos = this.getPos().offset(dir).offset(facing, orientation.getOffsetY() * (1 - this.height));
+                rotation = facing.get2DDataValue();
+                blockPos = this.getBlockPos().relative(dir).relative(facing, orientation.getStepY() * (1 - this.height));
             }
 
             this.canvas = DrawableCanvas.create(this.width, this.height);
-            this.display = VirtualDisplay.builder(this.canvas, blockPos, dir).rotation(BlockRotation.values()[rotation]).glowing(true)
-                    .invisible().raycast().callback(this::onClick).build();
+            this.display = VirtualDisplay.builder(this.canvas, blockPos, dir).rotation(Rotation.values()[rotation]).glowing(true)
+                    .invisible().raycast().interactionCallback(this::onClick).build();
             this.updateDisplay();
         }
     }
 
     @Unique
-    private void onClick(ServerPlayerEntity player, ClickType action, int x, int y) {
+    private void onClick(ServerPlayer player, VirtualDisplay.ClickType type, int x, int y) {
         var monitor = this.getServerMonitor();
-        if (monitor != null && action == ClickType.RIGHT) {
+        if (monitor != null && type == VirtualDisplay.ClickType.RIGHT) {
             x = (x - 20) / Fonts.FONT_WIDTH / ServerMonitorExt.of(monitor).getTextScalePublic();
             y = (y - 21) / Fonts.FONT_HEIGHT / ServerMonitorExt.of(monitor).getTextScalePublic();
             if (x >= 0 && y >= 0 && x < monitor.getTerminal().getWidth() && y < monitor.getTerminal().getHeight()) {
@@ -185,8 +183,8 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
             if (monitor != null && monitor.getTerminal() != null) {
                 CanvasUtils.fill(image, 16, 16, image.getWidth() - 16, image.getHeight() - 16, CanvasColor.BLACK_NORMAL);
 
-                assert this.world != null;
-                var screen = TerminalExt.of(monitor.getTerminal()).getRenderer().getImage(this.world.getTime());
+                assert this.level != null;
+                var screen = TerminalExt.of(monitor.getTerminal()).getRenderer().getImage(this.level.getGameTime());
                 var scale = ServerMonitorExt.of(monitor).getTextScalePublic();
 
                 int sWidth = (int) (screen.getWidth() * scale);
@@ -205,9 +203,9 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
 
     @Unique
     public void updateWatchers() {
-        if (this.world != null && this.display != null && this.canvas != null) {
-            var pos = this.getPos();
-            var players = ((ServerWorld) this.world).getPlayers((p) -> p.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) < 4096);
+        if (this.level != null && this.display != null && this.canvas != null) {
+            var pos = this.getBlockPos();
+            var players = ((ServerLevel) this.level).getPlayers((p) -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 4096);
 
             for (var player : players) {
                 if (!this.currentWatchers.contains(player)) {

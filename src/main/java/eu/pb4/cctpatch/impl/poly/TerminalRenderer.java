@@ -8,7 +8,6 @@ import eu.pb4.mapcanvas.api.core.CanvasImage;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.CanvasFont;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import net.minecraft.util.math.ColorHelper;
 
 public class TerminalRenderer {
     private final int fontWidth;

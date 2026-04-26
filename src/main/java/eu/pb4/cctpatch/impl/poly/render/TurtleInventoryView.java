@@ -7,19 +7,19 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import net.minecraft.inventory.Inventory;
+import net.minecraft.world.Container;
 
 public class TurtleInventoryView extends ScreenElement {
     private final ComputerGui gui;
     private final TurtleMenu wrapped;
-    private final Inventory inventory;
+    private final Container inventory;
     //private final Snowball[] ui;
 
     public TurtleInventoryView(int x, int y, ComputerGui gui, TurtleMenu turtleMenu) {
         super(x, y);
         this.gui = gui;
         this.wrapped = turtleMenu;
-        this.inventory = turtleMenu.slots.get(0).inventory;
+        this.inventory = turtleMenu.slots.get(0).container;
 
         /*this.ui = new Snowball[turtle.getContainerSize()];
 
@@ -39,8 +39,8 @@ public class TurtleInventoryView extends ScreenElement {
         CanvasUtils.fill(canvas, this.x, this.y, this.x + this.width(), this.y + this.height(), CanvasColor.BLACK_HIGH);
 
         //DefaultFonts.VANILLA.drawText(canvas, "Inventory: [OPEN]", this.x, this.y, 8, CanvasColor.WHITE_HIGH);
-        for (int i = 0; i < this.inventory.size(); i++) {
-            var item = this.inventory.getStack(i);
+        for (int i = 0; i < this.inventory.getContainerSize(); i++) {
+            var item = this.inventory.getItem(i);
 
             /*if (!this.ui[i].getItem().equals(item)) {
                 this.ui[i].setItem(item);
@@ -57,10 +57,10 @@ public class TurtleInventoryView extends ScreenElement {
                 canvasColor = this.wrapped.getSelectedSlot() == i ? CanvasColor.YELLOW_NORMAL : CanvasColor.WHITE_GRAY_HIGH;
             } else {
                 //var name = Localization.text(item.getName(), this.gui.getPlayer()).getString();
-                var name = item.getName().getString();
+                var name = item.getHoverName().getString();
 
                 if (name.length() > 18) {
-                    var delta = ((this.gui.getPlayer().age / 10) % (name.length() - 18));
+                    var delta = ((this.gui.getPlayer().tickCount / 10) % (name.length() - 18));
 
                     name = name.substring(delta, 18 + delta);
                 }
@@ -71,7 +71,7 @@ public class TurtleInventoryView extends ScreenElement {
 
             DefaultFonts.VANILLA.drawText(canvas, text, this.x + 10, this.y + i * 9, 8, canvasColor);
             if (selected) {
-                DefaultFonts.VANILLA.drawText(canvas, "»", this.x + 1 + (this.gui.getPlayer().age / 10) % 2, this.y + i * 9, 8, canvasColor);
+                DefaultFonts.VANILLA.drawText(canvas, "»", this.x + 1 + (this.gui.getPlayer().tickCount / 10) % 2, this.y + i * 9, 8, canvasColor);
             }
         }
     }

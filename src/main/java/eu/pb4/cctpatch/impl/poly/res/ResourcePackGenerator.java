@@ -23,11 +23,11 @@ import eu.pb4.polymer.resourcepack.extras.api.format.item.property.select.Select
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.CustomModelDataTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.DyeTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.ItemTintSource;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.ColorHelper;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 
 import javax.imageio.ImageIO;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -37,7 +37,7 @@ public class ResourcePackGenerator {
     public static void setup() {
         PolymerResourcePackUtils.addModAssets("computercraft");
         PolymerResourcePackUtils.addModAssets(ComputerCraftPolymerPatch.MOD_ID);
-        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.of("computercraft", "block"), ((identifier, resourcePackBuilder) -> {
+        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath("computercraft", "block"), ((identifier, resourcePackBuilder) -> {
             if (identifier.getPath().equals("block/turtle_colour")) {
                 return new ItemAsset(new BasicItemModel(identifier, List.of(new DyeTintSource(0xFFFFFF))), ItemAsset.Properties.DEFAULT);
             }
@@ -67,9 +67,9 @@ public class ResourcePackGenerator {
                                     new CustomModelDataStringProperty(0),
                                     selectItemModel.switchValue().cases()
                                             .stream().map(x -> new SelectItemModel.Case<>(
-                                                    x.values().stream().map(y -> ((ComputerState) y).asString()).toList(),
+                                                    x.values().stream().map(y -> ((ComputerState) y).getSerializedName()).toList(),
                                                     replacer[0].modifyDeep(model, x.model()))).toList()
-                                    ), selectItemModel.fallback().map(x -> replacer[0].modifyDeep(model, x)));
+                                    ), selectItemModel.fallback().map(x -> replacer[0].modifyDeep(model, x)), selectItemModel.transformation());
                         }
                         if (model instanceof BasicItemModel basicItemModel && basicItemModel.tints().stream().anyMatch(x -> x instanceof PocketComputerLight)) {
                             return new BasicItemModel(basicItemModel.model(),
@@ -99,7 +99,7 @@ public class ResourcePackGenerator {
                         var image = ImageIO.read(data.getStream());
                         for (var x = 0; x < image.getWidth(); x++) {
                             for (var y = 0; y < image.getHeight(); y++) {
-                                if (ColorHelper.getAlpha(image.getRGB(x, y)) == 0) {
+                                if (ARGB.alpha(image.getRGB(x, y)) == 0) {
                                     image.setRGB(x, y, 0xFF111111);
                                 }
                             }
@@ -121,8 +121,8 @@ public class ResourcePackGenerator {
         try (var container = ResourceLocatorApi.createGlobalAssetContainer()) {
             for (var overlay : container.locateFiles(TurtleOverlay.SOURCE)) {
                 try {
-                    var decoded = TurtleOverlay.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getRight().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
-                    TurtleModel.OVERLAY.put(overlay.getLeft().withPath(x -> x.substring(TurtleOverlay.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
+                    var decoded = TurtleOverlay.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getB().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
+                    TurtleModel.OVERLAY.put(overlay.getA().withPath(x -> x.substring(TurtleOverlay.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
@@ -130,8 +130,8 @@ public class ResourcePackGenerator {
 
             for (var overlay : container.locateFiles(TurtleUpgradeModel.SOURCE)) {
                 try {
-                    var decoded = TurtleUpgradeModel.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getRight().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
-                    TurtleModel.UPGRADES.put(overlay.getLeft().withPath(x -> x.substring(TurtleUpgradeModel.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
+                    var decoded = TurtleUpgradeModel.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getB().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
+                    TurtleModel.UPGRADES.put(overlay.getA().withPath(x -> x.substring(TurtleUpgradeModel.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }

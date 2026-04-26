@@ -15,16 +15,12 @@ import eu.pb4.mapcanvas.api.core.CanvasColor;
 import eu.pb4.mapcanvas.api.core.CanvasImage;
 import eu.pb4.mapcanvas.api.font.DefaultFonts;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.PlayerInput;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.item.ItemStack;
 
 public class PrintedPageGui extends MapGui {
     private final CanvasImage[] pages;
@@ -38,9 +34,9 @@ public class PrintedPageGui extends MapGui {
     @Nullable
     private final CenteredTextView pageText;
 
-    private PlayerInput previousInput = PlayerInput.DEFAULT;
+    private Input previousInput = Input.EMPTY;
 
-    public PrintedPageGui(ServerPlayerEntity player, ItemStack stack) {
+    public PrintedPageGui(ServerPlayer player, ItemStack stack) {
         super(player);
 
         this.data = stack.getOrDefault(ModRegistry.DataComponents.PRINTOUT.get(), PrintoutData.EMPTY);
@@ -107,7 +103,7 @@ public class PrintedPageGui extends MapGui {
             background.zIndex = 8;
             this.renderer.add(background);
 
-            var offset = stack.isOf(ModRegistry.Items.PRINTED_PAGE.get()) ? 0 : 8;
+            var offset = stack.is(ModRegistry.Items.PRINTED_PAGE.get()) ? 0 : 8;
 
 
             this.leftSide = new ImageView(bX - offset, bY, GuiTextures.PRINTED_PAGE.leftPageSide());
@@ -120,7 +116,7 @@ public class PrintedPageGui extends MapGui {
             this.renderer.add(this.rightSide);
 
 
-            if (stack.isOf(ModRegistry.Items.PRINTED_BOOK.get())) {
+            if (stack.is(ModRegistry.Items.PRINTED_BOOK.get())) {
                 this.renderer.add(new ImageView(
                     bX - 3,
                     centerY - GuiTextures.PRINTED_PAGE.leatherRight().getHeight() / 2,
@@ -188,7 +184,7 @@ public class PrintedPageGui extends MapGui {
     }
 
     @Override
-    public void onPlayerInput(PlayerInput input) {
+    public void onPlayerInput(Input input) {
         super.onPlayerInput(input);
         if (this.previousInput.right() != input.right() && input.right()) {
             this.nextPage();

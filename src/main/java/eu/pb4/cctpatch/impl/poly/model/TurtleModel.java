@@ -11,31 +11,31 @@ import eu.pb4.cctpatch.impl.poly.res.TurtleOverlay;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.EmptyUpgradeModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.ItemUpgradeModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.TurtleUpgradeModel;
+import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.minecraft.block.BlockState;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.DyedColorComponent;
-import net.minecraft.item.ItemDisplayContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class TurtleModel extends BlockModel {
-    public static final ItemStack COLORED_TURTLE_MODEL = ItemDisplayElementUtil.getModel(Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
-    public static final Identifier ELF_OVERLAY_MODEL = Identifier.of(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
+    public static final LazyItemStack COLORED_TURTLE_MODEL = ItemDisplayElementUtil.getModel(Identifier.fromNamespaceAndPath(ComputerCraftAPI.MOD_ID, "block/turtle_colour"));
+    public static final Identifier ELF_OVERLAY_MODEL = Identifier.fromNamespaceAndPath(ComputerCraftAPI.MOD_ID, "block/turtle_elf_overlay");
     public static final Map<Identifier, TurtleOverlay> OVERLAY = new HashMap<>();
     public static final Map<Identifier, TurtleUpgradeModel> UPGRADES = new HashMap<>();
     private final ItemDisplayElement base;
@@ -47,15 +47,15 @@ public class TurtleModel extends BlockModel {
     private float baseYaw;
     private UpgradeData<ITurtleUpgrade> leftUpgrade;
     private UpgradeData<ITurtleUpgrade> rightUpgrade;
-    private Vec3d lastPos;
+    private Vec3 lastPos;
     private int color = -1;
     private Identifier overlayId;
     private Identifier overlayId2;
 
     public TurtleModel(BlockState state, BlockPos pos) {
-        this.lastPos = Vec3d.ofCenter(pos);
-        this.baseYaw = state.get(TurtleBlock.FACING).getPositiveHorizontalDegrees();
-        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getSolidModel(state.getBlock().asItem()));
+        this.lastPos = Vec3.atCenterOf(pos);
+        this.baseYaw = state.getValue(TurtleBlock.FACING).toYRot();
+        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem()));
         this.base.setTeleportDuration(1);
         this.base.setItemDisplayContext(ItemDisplayContext.NONE);
         this.base.setYaw(this.baseYaw);
@@ -83,14 +83,14 @@ public class TurtleModel extends BlockModel {
     }
 
     @Override
-    protected void startWatchingExtraPackets(ServerPlayNetworkHandler player, Consumer<Packet<ClientPlayPacketListener>> packetConsumer) {
+    protected void startWatchingExtraPackets(ServerGamePacketListenerImpl player, Consumer<Packet<ClientGamePacketListener>> packetConsumer) {
         super.startWatchingExtraPackets(player, packetConsumer);
-        packetConsumer.accept(VirtualEntityUtils.createRidePacket(this.base.getEntityId(), IntList.of(this.leftAttachment.getEntityId(),
+        packetConsumer.accept(VirtualEntityUtils.createClientboundSetPassengersPacket(this.base.getEntityId(), IntList.of(this.leftAttachment.getEntityId(),
                 this.rightAttachment.getEntityId(), this.overlay.getEntityId())));
     }
 
     @Override
-    protected void notifyElementsOfPositionUpdate(Vec3d newPos, Vec3d delta) {
+    protected void notifyElementsOfPositionUpdate(Vec3 newPos, Vec3 delta) {
     }
 
     public void setYaw(float yaw) {
@@ -112,7 +112,7 @@ public class TurtleModel extends BlockModel {
             return;
         }
 
-        var id = upgrade.holder().registryKey().getValue();
+        var id = upgrade.holder().key().identifier();
 
         var model = UPGRADES.getOrDefault(id, ItemUpgradeModel.INSTANCE);
 
@@ -131,10 +131,10 @@ public class TurtleModel extends BlockModel {
         if (this.color != turtleBrain.getColour()) {
             this.color = turtleBrain.getColour();
             if (this.color == -1) {
-                this.base.setItem(ItemDisplayElementUtil.getSolidModel(this.blockState().getBlock().asItem()));
+                this.base.setItem(ItemDisplayElementUtil.getModel(this.blockState().getBlock().asItem()).get());
             } else {
-                var model = COLORED_TURTLE_MODEL.copy();
-                model.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(this.color));
+                var model = COLORED_TURTLE_MODEL.get().copy();
+                model.set(DataComponents.DYED_COLOR, new DyedItemColor(this.color));
                 this.base.setItem(model);
             }
         }
@@ -148,12 +148,12 @@ public class TurtleModel extends BlockModel {
 
             if ((this.overlayId != null && overlay == null) || (turtleBrain.getOverlay() != null && !turtleBrain.getOverlay().equals(this.overlayId))) {
                 this.overlayId = overlay != null ? turtleBrain.getOverlay() : null;
-                this.overlay.setItem(overlay == null ? ItemStack.EMPTY : ItemDisplayElementUtil.getSolidModel(overlay.model()));
+                this.overlay.setItem(overlay == null ? ItemStack.EMPTY : ItemDisplayElementUtil.getModel(overlay.model()).get());
             }
 
             if (!Objects.equals(overlay2, this.overlayId2)) {
                 this.overlayId2 = overlay2;
-                this.overlay.setItem(ItemDisplayElementUtil.getSolidModel(overlay2));
+                this.overlay.setItem(ItemDisplayElementUtil.getModel(overlay2).get());
             }
         }
 

@@ -1,10 +1,9 @@
 package eu.pb4.cctpatch.impl.util;
 
 import dan200.computercraft.shared.platform.RegistrationHelper;
-import net.minecraft.util.Identifier;
-
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import net.minecraft.resources.Identifier;
 
 public record FakeRegistrationHelper<T>(BiConsumer<Identifier, T> consumer) implements RegistrationHelper<T> {
     public FakeRegistrationHelper() {
@@ -13,7 +12,7 @@ public record FakeRegistrationHelper<T>(BiConsumer<Identifier, T> consumer) impl
 
     @Override
     public <U extends T> RegistryEntry<U> register(String s, Supplier<U> supplier) {
-        var x = new RegistryEntry<>(Identifier.of("computercraft", s), supplier.get());
+        var x = new RegistryEntry<>(Identifier.fromNamespaceAndPath("computercraft", s), supplier.get());
         consumer.accept(x.id, x.obj);
         return x;
     }

@@ -17,8 +17,8 @@ import dan200.computercraft.api.turtle.TurtleSide;
 import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
-import net.minecraft.component.ComponentType;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Util;
 import org.apache.commons.lang3.mutable.MutableObject;
 
@@ -26,7 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public record SelectUpgradeModel<T>(Cases<T> cases, Optional<TurtleUpgradeModel> fallback, MutableObject<Map<T, TurtleUpgradeModel>> caseMap) implements TurtleUpgradeModel {
-    public static final Identifier ID = Identifier.of(ComputerCraftAPI.MOD_ID, "select");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(ComputerCraftAPI.MOD_ID, "select");
     public static final MapCodec<? extends TurtleUpgradeModel> CODEC = RecordCodecBuilder.<SelectUpgradeModel<?>>mapCodec(instance -> instance.group(
             Cases.CODEC.forGetter(SelectUpgradeModel::cases),
             TurtleUpgradeModel.CODEC.optionalFieldOf("fallback").forGetter(SelectUpgradeModel::fallback)
@@ -62,13 +62,13 @@ public record SelectUpgradeModel<T>(Cases<T> cases, Optional<TurtleUpgradeModel>
         caseMap.getValue().getOrDefault(value, fallback.orElse(EmptyUpgradeModel.INSTANCE)).setupModel(upgrade, brain, turtleSide, attachment);
     }
 
-    public record Cases<T>(ComponentType<T> component, List<Pair<List<T>, TurtleUpgradeModel>> cases) {
-        private static final MapCodec<Cases<?>> CODEC = ComponentType.CODEC.dispatchMap("property", Cases::component, Util.memoize(Cases::codec));
+    public record Cases<T>(DataComponentType<T> component, List<Pair<List<T>, TurtleUpgradeModel>> cases) {
+        private static final MapCodec<Cases<?>> CODEC = DataComponentType.CODEC.dispatchMap("property", Cases::component, Util.memoize(Cases::codec));
 
-        private static <T> MapCodec<Cases<T>> codec(ComponentType<T> component) {
+        private static <T> MapCodec<Cases<T>> codec(DataComponentType<T> component) {
             return RecordCodecBuilder.mapCodec(instance -> instance.group(
                     MapCodec.unit(component).forGetter(Cases::component),
-                    caseCodec(component.getCodecOrThrow()).listOf().fieldOf("cases").validate(Cases::validate).forGetter(Cases::cases)
+                    caseCodec(component.codecOrThrow()).listOf().fieldOf("cases").validate(Cases::validate).forGetter(Cases::cases)
             ).apply(instance, Cases<T>::new));
         }
 

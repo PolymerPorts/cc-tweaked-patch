@@ -12,19 +12,17 @@ import eu.pb4.cctpatch.impl.poly.textures.RepeatingCanvas;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.core.PlayerCanvas;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
-import net.minecraft.entity.Entity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.network.packet.s2c.play.SetPlayerInventoryS2CPacket;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 import java.nio.charset.Charset;
+import net.minecraft.network.protocol.game.ClientboundSetPlayerInventoryPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 
 public class PocketComputerRenderer {
     private final PocketServerComputer computer;
-    private ServerPlayerEntity player;
+    private ServerPlayer player;
     private PlayerCanvas canvas;
 
     public PocketComputerRenderer(PocketServerComputer pocketServerComputer) {
@@ -40,7 +38,7 @@ public class PocketComputerRenderer {
     }
 
     public void tick(Entity entity) {
-        if (!PatchConfig.instance.displayPocketComputerScreenInHand || !(entity instanceof ServerPlayerEntity player) || !this.computer.isOn()) {
+        if (!PatchConfig.instance.displayPocketComputerScreenInHand || !(entity instanceof ServerPlayer player) || !this.computer.isOn()) {
             if (this.canvas != null) {
                 this.canvas.destroy();
             }
@@ -57,7 +55,7 @@ public class PocketComputerRenderer {
                 this.canvas = DrawableCanvas.create();
                 this.drawInitial();
                 this.canvas.addPlayer(player);
-                player.networkHandler.sendPacket(new SetPlayerInventoryS2CPacket(slot, mut.getValue()));
+                player.connection.send(new ClientboundSetPlayerInventoryPacket(slot, mut.getValue()));
 
             } else if (this.player != player) {
                 this.canvas.removePlayer(this.player);
@@ -74,12 +72,12 @@ public class PocketComputerRenderer {
         }
     }
 
-    private int findStack(ServerPlayerEntity player, MutableObject<ItemStack> mut) {
-        for (var slot = 0; slot < player.getInventory().size(); slot++) {
-            if (player.getInventory().getStack(slot).getItem() instanceof PocketComputerItem
-                    && ServerComputerReference.get(player.getInventory().getStack(slot), ServerContext.get(player.getEntityWorld().getServer()).registry()) == this.computer) {
+    private int findStack(ServerPlayer player, MutableObject<ItemStack> mut) {
+        for (var slot = 0; slot < player.getInventory().getContainerSize(); slot++) {
+            if (player.getInventory().getItem(slot).getItem() instanceof PocketComputerItem
+                    && ServerComputerReference.get(player.getInventory().getItem(slot), ServerContext.get(player.level().getServer()).registry()) == this.computer) {
                 if (mut != null) {
-                    mut.setValue(player.getInventory().getStack(slot));
+                    mut.setValue(player.getInventory().getItem(slot));
                 }
                 return slot;
             }
@@ -130,7 +128,7 @@ public class PocketComputerRenderer {
     }
 
     private void drawUpdate() {
-        var image = TerminalExt.of(this.computer).getMiniRenderer().getImage(player.getEntityWorld().getTime());
+        var image = TerminalExt.of(this.computer).getMiniRenderer().getImage(player.level().getGameTime());
         CanvasUtils.draw(this.canvas, (128 - image.getWidth()) / 2, (128 - image.getHeight()) / 2, image);
     }
 

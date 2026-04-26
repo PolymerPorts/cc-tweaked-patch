@@ -6,21 +6,21 @@ import dan200.computercraft.shared.ModRegistry;
 import dan200.computercraft.shared.platform.RegistrationHelper;
 import eu.pb4.cctpatch.impl.util.WrappingRegistrationHelper;
 import eu.pb4.factorytools.api.block.model.generic.BlockStateModelManager;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(ModRegistry.Blocks.class)
 public class ModRegistryBlocksMixin {
-    @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Ldan200/computercraft/shared/platform/PlatformHelper;createRegistrationHelper(Lnet/minecraft/registry/RegistryKey;)Ldan200/computercraft/shared/platform/RegistrationHelper;"))
+    @ModifyExpressionValue(method = "<clinit>", at = @At(value = "INVOKE", target = "Ldan200/computercraft/shared/platform/PlatformHelper;createRegistrationHelper(Lnet/minecraft/resources/ResourceKey;)Ldan200/computercraft/shared/platform/RegistrationHelper;"))
     private static RegistrationHelper<Block> passBlocks(RegistrationHelper<Block> original) {
-        return new WrappingRegistrationHelper<>(original, BlockStateModelManager::addSolidBlock);
+        return new WrappingRegistrationHelper<>(original, BlockStateModelManager::addBlock);
     }
 
     @ModifyReturnValue(method = { "properties", "turtleProperties", "modemProperties" }, at = @At("RETURN"))
-    private static AbstractBlock.Settings changeProperties(AbstractBlock.Settings original) {
-        return original.nonOpaque();
+    private static BlockBehaviour.Properties changeProperties(BlockBehaviour.Properties original) {
+        return original.noOcclusion();
     }
 
 }

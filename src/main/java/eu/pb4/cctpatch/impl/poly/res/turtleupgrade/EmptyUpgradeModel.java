@@ -12,13 +12,13 @@ import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.ItemStack;
 
 public record EmptyUpgradeModel() implements TurtleUpgradeModel {
     public static final EmptyUpgradeModel INSTANCE = new EmptyUpgradeModel();
 
-    public static final Identifier ID = Identifier.of(ComputerCraftAPI.MOD_ID, "empty");
+    public static final Identifier ID = Identifier.fromNamespaceAndPath(ComputerCraftAPI.MOD_ID, "empty");
     public static final MapCodec<TurtleUpgradeModel> CODEC = MapCodec.unit(INSTANCE);
 
     @Override
