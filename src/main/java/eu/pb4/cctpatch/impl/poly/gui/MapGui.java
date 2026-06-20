@@ -42,10 +42,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.PositionMoveRotation;
-import net.minecraft.world.entity.Relative;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -141,7 +138,7 @@ public class MapGui extends HotbarGui {
                 .map(Pair::getFirst).orElse(DEFAULT_SHIFT) : DEFAULT_SHIFT);
         this.holder.addElement(this.cameraPoint);
 
-        var horse = new SimpleEntityElement(EntityType.HORSE);
+        var horse = new SimpleEntityElement(EntityTypes.HORSE);
         horse.setInvisible(true);
         horse.setOffset(new Vec3(0, 10, 0));
         horse.setYaw(0);

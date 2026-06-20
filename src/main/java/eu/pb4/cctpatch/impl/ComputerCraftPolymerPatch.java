@@ -24,7 +24,6 @@ public class ComputerCraftPolymerPatch implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		//MixinEnvironment.getCurrentEnvironment().audit();
 		Fonts.TERMINAL_FONT.hashCode();
 		GuiTextures.ADVANCED_COMPUTER.hashCode();
 		PatchConfig.instance.hashCode();

@@ -121,8 +121,8 @@ public class ResourcePackGenerator {
         try (var container = ResourceLocatorApi.createGlobalAssetContainer()) {
             for (var overlay : container.locateFiles(TurtleOverlay.SOURCE)) {
                 try {
-                    var decoded = TurtleOverlay.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getB().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
-                    TurtleModel.OVERLAY.put(overlay.getA().withPath(x -> x.substring(TurtleOverlay.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
+                    var decoded = TurtleOverlay.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getSecond().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
+                    TurtleModel.OVERLAY.put(overlay.getFirst().withPath(x -> x.substring(TurtleOverlay.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
@@ -130,8 +130,8 @@ public class ResourcePackGenerator {
 
             for (var overlay : container.locateFiles(TurtleUpgradeModel.SOURCE)) {
                 try {
-                    var decoded = TurtleUpgradeModel.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getB().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
-                    TurtleModel.UPGRADES.put(overlay.getA().withPath(x -> x.substring(TurtleUpgradeModel.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
+                    var decoded = TurtleUpgradeModel.CODEC.decode(JsonOps.INSTANCE, JsonParser.parseString(new String(overlay.getSecond().get().readAllBytes(), StandardCharsets.UTF_8))).getOrThrow();
+                    TurtleModel.UPGRADES.put(overlay.getFirst().withPath(x -> x.substring(TurtleUpgradeModel.SOURCE.length() + 1, x.length() - ".json".length())), decoded.getFirst());
                 } catch (Throwable throwable) {
                     throwable.printStackTrace();
                 }
