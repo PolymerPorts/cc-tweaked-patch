@@ -12,6 +12,7 @@
     "mod.block.GenericBlockModelMixin",
     "mod.block.ModRegistryBlocksMixin",
     "mod.block.MonitorBlockEntityMixin",
+    "mod.block.MonitorBlockMixin",
     "mod.block.OnUseFixBlockMixin",
     "mod.block.TurtleBlockMixin",
     "mod.block.TurtleBrainMixin",
