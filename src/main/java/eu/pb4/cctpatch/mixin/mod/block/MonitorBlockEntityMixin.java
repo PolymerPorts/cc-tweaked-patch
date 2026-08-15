@@ -4,6 +4,7 @@ import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.shared.peripheral.monitor.MonitorBlock;
 import dan200.computercraft.shared.peripheral.monitor.MonitorBlockEntity;
 import dan200.computercraft.shared.peripheral.monitor.ServerMonitor;
+import eu.pb4.cctpatch.impl.poly.ext.MonitorBlockEntityExt;
 import eu.pb4.cctpatch.impl.poly.font.Fonts;
 import eu.pb4.cctpatch.impl.poly.ext.ServerMonitorExt;
 import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
@@ -38,7 +39,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 
 @Mixin(MonitorBlockEntity.class)
-public abstract class MonitorBlockEntityMixin extends BlockEntity {
+public abstract class MonitorBlockEntityMixin extends BlockEntity implements MonitorBlockEntityExt {
     @Shadow private int xIndex;
     @Shadow private int yIndex;
 
@@ -202,8 +203,9 @@ public abstract class MonitorBlockEntityMixin extends BlockEntity {
     }
 
     @Unique
+    @Override
     public void updateWatchers() {
-        if (this.level != null && this.display != null && this.canvas != null) {
+        if (this.level != null && this.display != null && this.canvas != null && xIndex == 0 && yIndex == 0) {
             var pos = this.getBlockPos();
             var players = ((ServerLevel) this.level).getPlayers((p) -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < 4096);
 
