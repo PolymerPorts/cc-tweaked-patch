@@ -141,6 +141,16 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonPacketLi
         }
     }
 
+    @Inject(method = "handleSpectatorAction", at = @At("HEAD"), cancellable = true)
+    private void ccp_onSpectatorAction(ServerboundSpectatorActionPacket packet, CallbackInfo ci) {
+        if (this.player.containerMenu instanceof AbstractWrapperMenu handler && handler.getBackingGui() instanceof MapGui computerGui) {
+            this.server.execute(() -> {
+                computerGui.onSpectatorAction();
+            });
+            ci.cancel();
+        }
+    }
+
     @Inject(method = "handlePlayerInput", at = @At("HEAD"), cancellable = true)
     private void ccp_onVehicleMove(ServerboundPlayerInputPacket packet, CallbackInfo ci) {
         if (this.player.containerMenu instanceof AbstractWrapperMenu handler && handler.getBackingGui() instanceof MapGui computerGui) {

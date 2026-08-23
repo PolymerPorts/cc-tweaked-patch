@@ -19,13 +19,9 @@ import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import eu.pb4.polymer.virtualentity.api.VirtualEntityUtils;
 import eu.pb4.polymer.virtualentity.api.attachment.HolderAttachment;
 import eu.pb4.polymer.virtualentity.api.data.EntityData;
-import eu.pb4.polymer.virtualentity.api.elements.BlockDisplayElement;
-import eu.pb4.polymer.virtualentity.api.elements.DisplayElement;
-import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
-import eu.pb4.polymer.virtualentity.api.elements.SimpleEntityElement;
+import eu.pb4.polymer.virtualentity.api.elements.*;
 import eu.pb4.sgui.api.gui.HotbarGui;
 import it.unimi.dsi.fastutil.ints.IntList;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.synchronization.SuggestionProviders;
@@ -59,7 +55,7 @@ import java.util.List;
 public class MapGui extends HotbarGui {
 
     private static final Identifier DISTANCE_STORAGE_ID = Identifier.fromNamespaceAndPath("cct-patch", "view_shift");
-    private static final Vec3 DEFAULT_SHIFT = new Vec3(0, 0, 1);
+    private static final Vec3 DEFAULT_SHIFT = new Vec3(0, 0, 1.2);
     private static final Packet<?> COMMAND_PACKET;
 
     static {
@@ -144,6 +140,11 @@ public class MapGui extends HotbarGui {
         horse.setYaw(0);
         horse.setPitch(0);
         this.holder.addElement(horse);
+
+        var interact = new InteractionElement();
+        interact.setOffset(new Vec3(0, -2, 0));
+        interact.setSize(20, 20);
+        this.holder.addElement(interact);
 
         this.cursorX = this.canvas.getWidth();
         this.cursorY = this.canvas.getHeight(); // MapDecoration.Type.TARGET_POINT
@@ -269,10 +270,8 @@ public class MapGui extends HotbarGui {
         }
     }
 
-    @Override
-    public boolean onEntityAttacked(int entityId) {
+    public void onSpectatorAction() {
         this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.LEFT_DOWN);
-        return super.onEntityAttacked(entityId);
     }
 
     @Override
