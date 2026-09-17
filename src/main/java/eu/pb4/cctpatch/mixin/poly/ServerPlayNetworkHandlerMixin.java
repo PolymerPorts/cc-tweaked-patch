@@ -135,7 +135,7 @@ public abstract class ServerPlayNetworkHandlerMixin extends ServerCommonPacketLi
     private void ccp_onCustomSuggestion(ServerboundCommandSuggestionPacket packet, CallbackInfo ci) {
         if (this.player.containerMenu instanceof AbstractWrapperMenu handler && handler.getBackingGui() instanceof MapGui computerGui) {
             this.server.execute(() -> {
-                computerGui.onCommandSuggestion(packet.getId(), packet.getCommand());
+                computerGui.onCommandSuggestion(packet.id(), packet.command());
             });
             ci.cancel();
         }
