@@ -1,10 +1,8 @@
 package eu.pb4.cctpatch.impl.poly.item;
 
-import eu.pb4.cctpatch.impl.poly.res.ResourcePackGenerator;
 import eu.pb4.cctpatch.impl.util.OptionalClientNetworking;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -17,7 +15,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
-import org.jetbrains.annotations.Nullable;
 
 public record PolyBaseItem(Item item) implements PolymerItem {
     @Override
@@ -45,10 +42,5 @@ public record PolyBaseItem(Item item) implements PolymerItem {
     @Override
     public boolean canSyncRawToClient(PacketContext context) {
         return OptionalClientNetworking.canSyncRawToClient(context);
-    }
-
-    @Override
-    public @Nullable Identifier getPolymerItemModel(ItemStack stack, PacketContext context, HolderLookup.Provider lookup) {
-        return ResourcePackGenerator.specialModel(PolymerItem.super.getPolymerItemModel(stack, context, lookup));
     }
 }

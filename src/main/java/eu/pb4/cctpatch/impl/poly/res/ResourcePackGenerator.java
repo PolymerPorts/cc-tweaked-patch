@@ -11,7 +11,6 @@ import eu.pb4.cctpatch.impl.poly.res.property.TurtleShowElfOverlay;
 import eu.pb4.cctpatch.impl.poly.res.tint.PocketComputerLight;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.TurtleUpgradeModel;
-import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.resourcepack.api.PackResource;
 import eu.pb4.polymer.resourcepack.api.PolymerResourcePackUtils;
 import eu.pb4.polymer.resourcepack.api.ResourcePackBuilder;
@@ -24,6 +23,7 @@ import eu.pb4.polymer.resourcepack.extras.api.format.item.property.select.Select
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.CustomModelDataTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.DyeTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.ItemTintSource;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 
 import javax.imageio.ImageIO;
@@ -31,17 +31,19 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class ResourcePackGenerator {
-    public static final String SUFFIX = "_polymer";
-    public static final Set<String> SPECIAL_MODELS = new HashSet<>();
-
     public static void setup() {
         PolymerResourcePackUtils.addModAssets("computercraft");
         PolymerResourcePackUtils.addModAssets(ComputerCraftPolymerPatch.MOD_ID);
+        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath("computercraft", "block"), ((identifier, resourcePackBuilder) -> {
+            if (identifier.getPath().equals("block/turtle_colour")) {
+                return new ItemAsset(new BasicItemModel(identifier, List.of(new DyeTintSource(0xFFFFFF))), ItemAsset.Properties.DEFAULT);
+            }
+            return new ItemAsset(new BasicItemModel(identifier), ItemAsset.Properties.DEFAULT);
+        }));
+
         SelectProperty.TYPES.put(PocketComputerStateProperty.ID, PocketComputerStateProperty.TYPE);
         BooleanProperty.TYPES.put(TurtleShowElfOverlay.ID, TurtleShowElfOverlay.CODEC);
         ItemTintSource.TYPES.put(PocketComputerLight.ID, PocketComputerLight.CODEC);
@@ -49,46 +51,24 @@ public class ResourcePackGenerator {
         ItemModel.TYPES.put(TurtleOverlayModel.ID, TurtleOverlayModel.CODEC);
 
         PolymerResourcePackUtils.RESOURCE_PACK_CREATION_EVENT.register(ResourcePackGenerator::build);
-        ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath("computercraft", "block"), ((identifier, resourcePackBuilder) -> {
-            if (identifier.getPath().equals("block/turtle_colour")) {
-                return new ItemAsset(new BasicItemModel(identifier, List.of(new DyeTintSource(0xFFFFFF))), ItemAsset.Properties.DEFAULT);
-            }
-            return new ItemAsset(new BasicItemModel(identifier), ItemAsset.Properties.DEFAULT);
-        }));
     }
 
     private static void build(ResourcePackBuilder builder) {
         loadData();
 
+        builder.getPackMcMetaBuilder().addFabricOverlay(ResourceConditions.allModsLoaded("computercraft"), "computercraft");
+        builder.addPreFinishTask(b -> b.forEachResource((path, data) -> {
+            if (
+                path.startsWith("assets/computercraft/items/pocket_computer_") ||
+                    path.startsWith("assets/computercraft/items/turtle_") ||
+                    path.startsWith("assets/computercraft/textures/block/monitor_") && path.endsWith(".png")
+            ) {
+                b.addData(path.replace("assets/", "computercraft/assets/"), data);
+            }
+        }));
+
         builder.addResourceConverter((path, data) -> {
             try {
-                if (path.startsWith("assets/computercraft/textures/block/monitor_") && path.endsWith(".png")) {
-                    var id = Integer.parseInt(path.split("[_.]")[2]);
-                    if (id > 15 && id < 32) {
-                        var image = ImageIO.read(data.getStream());
-                        for (var x = 0; x < image.getWidth(); x++) {
-                            for (var y = 0; y < image.getHeight(); y++) {
-                                if (ARGB.alpha(image.getRGB(x, y)) == 0) {
-                                    image.setRGB(x, y, 0xFF111111);
-                                }
-                            }
-                        }
-                        var out = new ByteArrayOutputStream();
-                        ImageIO.write(image, "png", out);
-                        return PackResource.of(out.toByteArray());
-                    }
-                }
-            } catch (Throwable ignored) {
-                ignored.printStackTrace();
-            }
-            return data;
-        });
-
-        builder.addPreFinishTask(b -> {
-            b.forEachResource((path, data) -> {
-                if (!path.startsWith("assets/computercraft/items")) return;
-                String modelPath = path.substring("assets/computercraft/items/".length()).replace(".json", "");
-
                 if (path.startsWith("assets/computercraft/items/pocket_computer_")) {
                     var asset = ItemAsset.fromJson(data.asString());
                     var replacer = new ItemModel.Replacer[] { null };
@@ -108,9 +88,7 @@ public class ResourcePackGenerator {
                         }
                         return model;
                     };
-
-                    builder.addData(path.replace(".json", SUFFIX + ".json"), PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties())));
-                    SPECIAL_MODELS.add(modelPath);
+                    return PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()));
                 } else if (path.startsWith("assets/computercraft/items/turtle_")) {
                     var asset = ItemAsset.fromJson(data.asString());
                     var replacer = new ItemModel.Replacer[] { null };
@@ -123,18 +101,31 @@ public class ResourcePackGenerator {
                         }
                         return model;
                     };
-                    builder.addData(path.replace(".json", SUFFIX + ".json"), PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties())));
-                    SPECIAL_MODELS.add(modelPath);
+                    return PackResource.fromAsset(new ItemAsset(replacer[0].modifyDeep(EmptyItemModel.INSTANCE, asset.model()), asset.properties()));
                 }
-            });
-        });
-    }
 
-    public static Identifier specialModel(Identifier model) {
-        if (ResourcePackGenerator.SPECIAL_MODELS.contains(model.getPath())) {
-            return model.withSuffix(ResourcePackGenerator.SUFFIX);
-        }
-        return model;
+                if (path.startsWith("assets/computercraft/textures/block/monitor_") && path.endsWith(".png")) {
+                    var id = Integer.parseInt(path.split("[_.]")[2]);
+                    if (id > 15 && id < 32) {
+                        var image = ImageIO.read(data.getStream());
+                        for (var x = 0; x < image.getWidth(); x++) {
+                            for (var y = 0; y < image.getHeight(); y++) {
+                                if (ARGB.alpha(image.getRGB(x, y)) == 0) {
+                                    image.setRGB(x, y, 0xFF111111);
+                                }
+                            }
+                        }
+                        var out = new ByteArrayOutputStream();
+                        ImageIO.write(image, "png", out);
+                        return PackResource.of(out.toByteArray());
+                    }
+                }
+            } catch (Throwable ignored) {
+                ignored.printStackTrace();
+            }
+
+            return data;
+        });
     }
 
     private static void loadData() {

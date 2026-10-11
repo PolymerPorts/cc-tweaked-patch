@@ -7,7 +7,6 @@ import dan200.computercraft.api.upgrades.UpgradeData;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.util.Holiday;
-import eu.pb4.cctpatch.impl.poly.res.ResourcePackGenerator;
 import eu.pb4.cctpatch.impl.poly.res.TurtleOverlay;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.EmptyUpgradeModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.ItemUpgradeModel;
@@ -31,7 +30,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -58,7 +56,7 @@ public class TurtleModel extends BlockModel {
     public TurtleModel(BlockState state, BlockPos pos) {
         this.lastPos = Vec3.atCenterOf(pos);
         this.baseYaw = state.getValue(TurtleBlock.FACING).toYRot();
-        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem().components().get(DataComponents.ITEM_MODEL).withPrefix("block/")));
+        this.base = ItemDisplayElementUtil.createSimple(ItemDisplayElementUtil.getModel(state.getBlock().asItem()));
         this.base.setTeleportDuration(1);
         this.base.setItemDisplayContext(ItemDisplayContext.NONE);
         this.base.setYaw(this.baseYaw);
