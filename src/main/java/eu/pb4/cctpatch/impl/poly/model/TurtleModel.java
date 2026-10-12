@@ -11,6 +11,7 @@ import eu.pb4.cctpatch.impl.poly.res.TurtleOverlay;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.EmptyUpgradeModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.ItemUpgradeModel;
 import eu.pb4.cctpatch.impl.poly.res.turtleupgrade.TurtleUpgradeModel;
+import eu.pb4.cctpatch.impl.util.OptionalClientNetworking;
 import eu.pb4.factorytools.api.util.LazyItemStack;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.factorytools.api.virtualentity.ItemDisplayElementUtil;
@@ -168,5 +169,11 @@ public class TurtleModel extends BlockModel {
             this.rightUpgrade = rightUpgrade;
             setupUpgradeModel(rightUpgrade, turtleBrain, TurtleSide.RIGHT, this.rightAttachment);
         //}
+    }
+
+    @Override
+    public boolean startWatching(ServerGamePacketListenerImpl player) {
+        if (OptionalClientNetworking.canSyncRawToClient(player)) return false;
+        return super.startWatching(player);
     }
 }

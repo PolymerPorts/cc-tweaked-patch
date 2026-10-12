@@ -2,6 +2,7 @@ package eu.pb4.cctpatch.mixin.mod.block;
 
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
 import eu.pb4.cctpatch.impl.poly.model.TurtleModel;
+import eu.pb4.cctpatch.impl.util.OptionalClientNetworking;
 import eu.pb4.factorytools.api.block.FactoryBlock;
 import eu.pb4.polymer.virtualentity.api.ElementHolder;
 import net.fabricmc.fabric.api.networking.v1.context.PacketContext;
@@ -27,6 +28,7 @@ public class TurtleBlockMixin extends Block implements FactoryBlock {
 
     @Override
     public BlockState getPolymerBlockState(BlockState state, PacketContext context) {
+        if (OptionalClientNetworking.canSyncRawToClient(context)) return state;
         return Blocks.BARRIER.defaultBlockState();
     }
 

@@ -23,12 +23,12 @@ import eu.pb4.polymer.resourcepack.extras.api.format.item.property.select.Select
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.CustomModelDataTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.DyeTintSource;
 import eu.pb4.polymer.resourcepack.extras.api.format.item.tint.ItemTintSource;
+import net.fabricmc.fabric.api.resource.conditions.v1.ResourceConditions;
 import nl.theepicblock.resourcelocatorapi.ResourceLocatorApi;
 
 import javax.imageio.ImageIO;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -56,6 +56,17 @@ public class ResourcePackGenerator {
     private static void build(ResourcePackBuilder builder) {
         loadData();
 
+        builder.getPackMcMetaBuilder().addFabricOverlay(ResourceConditions.allModsLoaded("computercraft"), "computercraft");
+        builder.addPreFinishTask(b -> b.forEachResource((path, data) -> {
+            if (
+                path.startsWith("assets/computercraft/items/pocket_computer_") ||
+                    path.startsWith("assets/computercraft/items/turtle_") ||
+                    path.startsWith("assets/computercraft/textures/block/monitor_") && path.endsWith(".png")
+            ) {
+                b.addData(path.replace("assets/", "computercraft/assets/"), data);
+            }
+        }));
+
         builder.addResourceConverter((path, data) -> {
             try {
                 if (path.startsWith("assets/computercraft/items/pocket_computer_")) {
@@ -64,16 +75,16 @@ public class ResourcePackGenerator {
                     replacer[0] = (parent, model) -> {
                         if (model instanceof SelectItemModel<?, ?> selectItemModel && selectItemModel.switchValue().property() instanceof PocketComputerStateProperty) {
                             return new SelectItemModel<>(new SelectItemModel.Switch<>(
-                                    new CustomModelDataStringProperty(0),
-                                    selectItemModel.switchValue().cases()
-                                            .stream().map(x -> new SelectItemModel.Case<>(
-                                                    x.values().stream().map(y -> ((ComputerState) y).getSerializedName()).toList(),
-                                                    replacer[0].modifyDeep(model, x.model()))).toList()
-                                    ), selectItemModel.fallback().map(x -> replacer[0].modifyDeep(model, x)), selectItemModel.transformation());
+                                new CustomModelDataStringProperty(0),
+                                selectItemModel.switchValue().cases()
+                                    .stream().map(x -> new SelectItemModel.Case<>(
+                                        x.values().stream().map(y -> ((ComputerState) y).getSerializedName()).toList(),
+                                        replacer[0].modifyDeep(model, x.model()))).toList()
+                            ), selectItemModel.fallback().map(x -> replacer[0].modifyDeep(model, x)), selectItemModel.transformation());
                         }
                         if (model instanceof BasicItemModel basicItemModel && basicItemModel.tints().stream().anyMatch(x -> x instanceof PocketComputerLight)) {
                             return new BasicItemModel(basicItemModel.model(),
-                                    basicItemModel.tints().stream().map(x -> x instanceof PocketComputerLight light ? new CustomModelDataTintSource(0, light.defaultColour()) : x).toList());
+                                basicItemModel.tints().stream().map(x -> x instanceof PocketComputerLight light ? new CustomModelDataTintSource(0, light.defaultColour()) : x).toList());
                         }
                         return model;
                     };

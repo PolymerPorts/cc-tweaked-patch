@@ -2,11 +2,12 @@ package eu.pb4.cctpatch.mixin.mod;
 
 import dan200.computercraft.shared.pocket.items.PocketComputerItem;
 import eu.pb4.cctpatch.impl.compat.PolyMcUtils;
+import eu.pb4.cctpatch.impl.poly.OptionalClientSyncedObject;
 import eu.pb4.cctpatch.impl.poly.item.PolyBaseItem;
 import eu.pb4.cctpatch.impl.poly.item.PolyPocketComputerItem;
-import eu.pb4.polymer.core.api.block.PolymerBlockUtils;
 import eu.pb4.polymer.core.api.item.PolymerItem;
 import eu.pb4.polymer.core.api.other.PolymerMenuUtils;
+import eu.pb4.polymer.core.api.utils.PolymerSyncedObject;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.inventory.MenuType;
@@ -28,7 +29,7 @@ public class PlatformHelperImplRegistryEntryImplMixin {
     @Inject(method = "register(Lnet/minecraft/core/Registry;)V", at = @At("TAIL"))
     private void onRegister(Registry<?> registry, CallbackInfo ci) {
         if (registry == BuiltInRegistries.BLOCK_ENTITY_TYPE) {
-            PolymerBlockUtils.registerBlockEntity((BlockEntityType<?>) this.instance);
+            PolymerSyncedObject.setSyncedObject(BuiltInRegistries.BLOCK_ENTITY_TYPE, (BlockEntityType<?>) this.instance, new OptionalClientSyncedObject<>());
         } else if (registry == BuiltInRegistries.MENU) {
             PolymerMenuUtils.registerType((MenuType<?>) this.instance);
             PolyMcUtils.addScreenHandlerBypass((MenuType<?>) this.instance);
