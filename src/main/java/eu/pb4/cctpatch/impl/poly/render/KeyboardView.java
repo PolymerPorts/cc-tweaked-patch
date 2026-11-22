@@ -189,11 +189,11 @@ public class KeyboardView extends ScreenElement {
                     if (lxs <= x && lxs + key.width() > x) {
                         var id = key.key();
                         if (inputExt.isKeyDown(id)) {
-                            if (type == ClickType.LEFT_DOWN) {
+                            if (type == ClickType.LEFT) {
                                 this.gui.input.getComputerInput().keyUp(id);
                             }
                         } else {
-                            this.gui.input.getComputerInput().keyDown(id, type == ClickType.RIGHT_DOWN);
+                            this.gui.input.getComputerInput().keyDown(id, type == ClickType.RIGHT);
                             var shift = inputExt.isKeyDown(Keys.LEFT_SHIFT) || inputExt.isKeyDown(Keys.RIGHT_SHIFT);
                             var character = shift || inputExt.isKeyDown(Keys.CAPS_LOCK)
                                 ? key.upperCase() : key.lowerCase();
@@ -201,7 +201,7 @@ public class KeyboardView extends ScreenElement {
                                 this.gui.input.getComputerInput().charTyped((byte) character);
                             }
 
-                            if (type == ClickType.LEFT_DOWN) {
+                            if (type == ClickType.LEFT) {
                                 this.gui.keysToReleaseNextTick.add(key.key());
                             }
                        }

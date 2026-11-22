@@ -1,9 +1,7 @@
 package eu.pb4.cctpatch.impl.poly.render;
 
-import dan200.computercraft.core.terminal.Terminal;
 import dan200.computercraft.shared.computer.menu.ServerInputHandler;
 import eu.pb4.cctpatch.impl.poly.TerminalRenderer;
-import eu.pb4.cctpatch.impl.poly.ext.TerminalExt;
 import eu.pb4.mapcanvas.api.core.DrawableCanvas;
 import eu.pb4.mapcanvas.api.utils.CanvasUtils;
 
@@ -48,10 +46,15 @@ public final class TerminalView extends ScreenElement {
         int lx = x / this.terminal.fontWidth() + 1;
         int ly = y / terminal.fontHeight() + 1;
 
-        if (type == ClickType.RIGHT_DOWN) {
-            this.inputState.getComputerInput().mouseClick(0, lx, ly);
-        } else if (type == ClickType.LEFT_DOWN) {
+        if (type == ClickType.RIGHT) {
+            this.inputState.getComputerInput().mouseClick(2, lx, ly);
+            this.inputState.getComputerInput().mouseUp(2, lx, ly);
+        } else if (type == ClickType.MIDDLE) {
+            this.inputState.getComputerInput().mouseClick(3, lx, ly);
+            this.inputState.getComputerInput().mouseUp(3, lx, ly);
+        } else if (type == ClickType.LEFT) {
             this.inputState.getComputerInput().mouseClick(1, lx, ly);
+            this.inputState.getComputerInput().mouseUp(1, lx, ly);
         }
     }
 }

@@ -29,9 +29,8 @@ public abstract class ScreenElement {
     public void click(int x, int y, ClickType type) { }
 
     public enum ClickType {
-        LEFT_UP,
-        LEFT_DOWN,
-        RIGHT_UP,
-        RIGHT_DOWN;
+        LEFT,
+        RIGHT,
+        MIDDLE;
     }
 }

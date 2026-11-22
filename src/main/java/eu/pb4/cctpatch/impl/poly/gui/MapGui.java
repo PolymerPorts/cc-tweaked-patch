@@ -230,6 +230,10 @@ public class MapGui extends HotbarGui {
         this.player.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.CHANGE_GAME_MODE,
                 this.player.gameMode.getGameModeForPlayer().getId()));
         this.player.connection.send(new ClientboundPlayerPositionPacket(this.player.getId(), PositionMoveRotation.of(this.player), EnumSet.noneOf(Relative.class)));
+
+        if (this.player.getVehicle() != null) {
+            this.player.connection.send(new ClientboundSetPassengersPacket(this.player.getVehicle()));
+        }
         super.afterRemoval();
     }
 
@@ -271,13 +275,19 @@ public class MapGui extends HotbarGui {
     }
 
     public void onSpectatorAction() {
-        this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.LEFT_DOWN);
+        this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.LEFT);
     }
 
     @Override
     public boolean onEntityInteracted(int entityId, InteractionHand hand, boolean isSneaking, Vec3 interactionPos) {
-        this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.RIGHT_DOWN);
+        this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.RIGHT);
         return super.onEntityInteracted(entityId, hand, isSneaking, interactionPos);
+    }
+
+    @Override
+    public boolean onPickItemFromEntity(int entityId, boolean includeData) {
+        this.renderer.click(this.cursorX / 2, this.cursorY / 2, ScreenElement.ClickType.MIDDLE);
+        return super.onPickItemFromEntity(entityId, includeData);
     }
 
     public void setDistance(Vec3 vec) {
