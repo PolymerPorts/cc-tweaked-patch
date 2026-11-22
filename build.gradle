@@ -44,17 +44,17 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	implementation "cc.tweaked:cc-tweaked-26.3-fabric:1.120.2"
+	implementation "cc.tweaked:cc-tweaked-26.3-fabric:1.122.0"
 
 	implementation include('eu.pb4:sgui:2.2.0+26.3')
 	implementation include('eu.pb4:player-data-api:0.11.0+26.2')
 	implementation include('eu.pb4:map-canvas-api:0.9.1+26.2')
 	implementation include('eu.pb4:factorytools:0.12.1+26.3')
-	implementation 'eu.pb4:polymer-core:0.18.4+26.3'
-	implementation 'eu.pb4:polymer-resource-pack:0.18.4+26.3'
-	implementation 'eu.pb4:polymer-resource-pack-extras:0.18.4+26.3'
-	implementation 'eu.pb4:polymer-autohost:0.18.4+26.3'
-	implementation 'eu.pb4:polymer-virtual-entity:0.18.4+26.3'
+	implementation 'eu.pb4:polymer-core:0.18.7+26.3'
+	implementation 'eu.pb4:polymer-resource-pack:0.18.7+26.3'
+	implementation 'eu.pb4:polymer-resource-pack-extras:0.18.7+26.3'
+	implementation 'eu.pb4:polymer-autohost:0.18.7+26.3'
+	implementation 'eu.pb4:polymer-virtual-entity:0.18.7+26.3'
 
 
 	//modCompileOnly ("nl.theepicblock:PolyMc:5.6.1+1.20.4") {

@@ -8,7 +8,7 @@ import com.mojang.serialization.MapCodec;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
-import dan200.computercraft.api.upgrades.UpgradeData;
+import dan200.computercraft.impl.UpgradeData;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;

@@ -38,10 +38,7 @@ public class ResourcePackGenerator {
         PolymerResourcePackUtils.addModAssets("computercraft");
         PolymerResourcePackUtils.addModAssets(ComputerCraftPolymerPatch.MOD_ID);
         ResourcePackExtras.forDefault().addBridgedModelsFolder(Identifier.fromNamespaceAndPath("computercraft", "block"), ((identifier, resourcePackBuilder) -> {
-            if (identifier.getPath().equals("block/turtle_colour")) {
-                return new ItemAsset(new BasicItemModel(identifier, List.of(new DyeTintSource(0xFFFFFF))), ItemAsset.Properties.DEFAULT);
-            }
-            return new ItemAsset(new BasicItemModel(identifier), ItemAsset.Properties.DEFAULT);
+            return new ItemAsset(new BasicItemModel(identifier, List.of(new DyeTintSource(-1))), ItemAsset.Properties.DEFAULT);
         }));
 
         SelectProperty.TYPES.put(PocketComputerStateProperty.ID, PocketComputerStateProperty.TYPE);

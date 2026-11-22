@@ -9,7 +9,7 @@ import com.mojang.serialization.MapCodec;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
-import dan200.computercraft.api.upgrades.UpgradeData;
+import dan200.computercraft.impl.UpgradeData;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import eu.pb4.factorytools.api.virtualentity.BlockModel;
 import eu.pb4.polymer.virtualentity.api.elements.ItemDisplayElement;
@@ -35,7 +35,7 @@ public record ItemUpgradeModel() implements TurtleUpgradeModel {
         mat.rotate(Axis.XP.rotationDegrees(toolAngle));
         mat.rotateY(Mth.HALF_PI);
         mat.translate(0, 0, turtleSide == TurtleSide.RIGHT ? -6.5f / 16f : 6.5f / 16f);
-        attachment.setItem(upgrade.getUpgradeItem().create());
+        attachment.setItem(upgrade.getItem().create());
         attachment.setItemDisplayContext(ItemDisplayContext.FIXED);
         attachment.setTransformation(mat);
         mat.identity();

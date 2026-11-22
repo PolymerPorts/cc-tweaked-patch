@@ -3,7 +3,7 @@ package eu.pb4.cctpatch.impl.poly.model;
 import dan200.computercraft.api.ComputerCraftAPI;
 import dan200.computercraft.api.turtle.ITurtleUpgrade;
 import dan200.computercraft.api.turtle.TurtleSide;
-import dan200.computercraft.api.upgrades.UpgradeData;
+import dan200.computercraft.impl.UpgradeData;
 import dan200.computercraft.shared.turtle.blocks.TurtleBlock;
 import dan200.computercraft.shared.turtle.core.TurtleBrain;
 import dan200.computercraft.shared.util.Holiday;
@@ -113,7 +113,7 @@ public class TurtleModel extends BlockModel {
             return;
         }
 
-        var id = upgrade.holder().key().identifier();
+        var id = upgrade.getUpgradeHolder().key().identifier();
 
         var model = UPGRADES.getOrDefault(id, ItemUpgradeModel.INSTANCE);
 
